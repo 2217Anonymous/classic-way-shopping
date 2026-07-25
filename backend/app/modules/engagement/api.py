@@ -1,3 +1,4 @@
+from uuid import UUID
 from fastapi import APIRouter, status
 
 from app.modules.catalog.repositories.product_repository import ProductRepository
@@ -52,7 +53,7 @@ def add_wishlist_item(
 
 @wishlist_router.delete("/items/{item_id}", response_model=WishlistResponse)
 def remove_wishlist_item(
-    item_id: int, customer: CurrentCustomer, db: DbSession
+    item_id: UUID, customer: CurrentCustomer, db: DbSession
 ) -> WishlistResponse:
     return get_service(db).remove_wishlist_item(customer, item_id)
 
@@ -71,7 +72,7 @@ def add_compare_item(
 
 @compare_router.delete("/items/{item_id}", response_model=CompareResponse)
 def remove_compare_item(
-    item_id: int, customer: CurrentCustomer, db: DbSession
+    item_id: UUID, customer: CurrentCustomer, db: DbSession
 ) -> CompareResponse:
     return get_service(db).remove_compare_item(customer, item_id)
 

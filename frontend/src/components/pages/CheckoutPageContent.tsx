@@ -60,7 +60,7 @@ export default function CheckoutPageContent() {
       try {
         const cartId = getCartId();
         const preview = await previewCheckout({
-          cart_id: cartId ? Number(cartId) : null,
+          cart_id: cartId || null,
           coupon_code: coupon.trim() || null,
           payment_method: paymentMethod,
         });
@@ -85,12 +85,12 @@ export default function CheckoutPageContent() {
     setCouponMessage(null);
     try {
       const cartId = getCartId();
-      const result = await applyCoupon(coupon.trim(), cartId ? Number(cartId) : null);
+      const result = await applyCoupon(coupon.trim(), cartId || null);
       setDiscount(Number(result.discount_amount) || 0);
       setCouponMessage(result.message || "Coupon applied");
       try {
         const preview = await previewCheckout({
-          cart_id: cartId ? Number(cartId) : null,
+          cart_id: cartId || null,
           coupon_code: coupon.trim() || null,
           payment_method: paymentMethod,
         });
@@ -126,7 +126,7 @@ export default function CheckoutPageContent() {
     try {
       const cartId = getCartId();
       const order = await createOrder({
-        cart_id: cartId ? Number(cartId) : null,
+        cart_id: cartId || null,
         coupon_code: coupon.trim() || null,
         payment_method: paymentMethod,
         notes: notes || null,

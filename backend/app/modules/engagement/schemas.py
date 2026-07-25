@@ -1,3 +1,4 @@
+from uuid import UUID
 from datetime import datetime
 from decimal import Decimal
 
@@ -5,7 +6,7 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 class ReviewImageResponse(BaseModel):
-    id: int
+    id: UUID
     url: str
     sort_order: int
 
@@ -13,9 +14,9 @@ class ReviewImageResponse(BaseModel):
 
 
 class ReviewResponse(BaseModel):
-    id: int
-    product_id: int
-    customer_id: int
+    id: UUID
+    product_id: UUID
+    customer_id: UUID
     customer_name: str | None = None
     rating: int
     title: str | None
@@ -30,15 +31,15 @@ class ReviewResponse(BaseModel):
 
 
 class ReviewCreate(BaseModel):
-    product_id: int
+    product_id: UUID
     rating: int = Field(ge=1, le=5)
     title: str | None = Field(default=None, max_length=200)
     body: str | None = Field(default=None, max_length=5000)
 
 
 class WishlistItemResponse(BaseModel):
-    id: int
-    product_id: int
+    id: UUID
+    product_id: UUID
     product_name: str | None = None
     product_slug: str | None = None
     product_price: Decimal | None = None
@@ -46,19 +47,19 @@ class WishlistItemResponse(BaseModel):
 
 
 class WishlistResponse(BaseModel):
-    id: int
-    customer_id: int
+    id: UUID
+    customer_id: UUID
     items: list[WishlistItemResponse] = Field(default_factory=list)
     item_count: int = 0
 
 
 class WishlistItemCreate(BaseModel):
-    product_id: int
+    product_id: UUID
 
 
 class CompareItemResponse(BaseModel):
-    id: int
-    product_id: int
+    id: UUID
+    product_id: UUID
     product_name: str | None = None
     product_slug: str | None = None
     product_price: Decimal | None = None
@@ -66,14 +67,14 @@ class CompareItemResponse(BaseModel):
 
 
 class CompareResponse(BaseModel):
-    id: int
-    customer_id: int
+    id: UUID
+    customer_id: UUID
     items: list[CompareItemResponse] = Field(default_factory=list)
     item_count: int = 0
 
 
 class CompareItemCreate(BaseModel):
-    product_id: int
+    product_id: UUID
 
 
 class FeedbackCreate(BaseModel):
@@ -84,8 +85,8 @@ class FeedbackCreate(BaseModel):
 
 
 class FeedbackResponse(BaseModel):
-    id: int
-    customer_id: int | None
+    id: UUID
+    customer_id: UUID | None
     name: str
     email: EmailStr
     subject: str

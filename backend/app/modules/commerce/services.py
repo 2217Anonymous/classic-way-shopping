@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from uuid import UUID
 from decimal import Decimal
 
 from app.modules.catalog.repositories.product_repository import ProductRepository
@@ -96,7 +97,7 @@ class CommerceService:
         self,
         payload: CouponApplyRequest,
         *,
-        cart_id_header: int | None,
+        cart_id_header: UUID | None,
         customer: Customer | None,
     ) -> CouponResultResponse:
         cart = self.storefront_cart.resolve_cart(
@@ -115,7 +116,7 @@ class CommerceService:
         )
 
     def remove_coupon(
-        self, *, cart_id_header: int | None, customer: Customer | None
+        self, *, cart_id_header: UUID | None, customer: Customer | None
     ) -> MessageResponse:
         cart = self.storefront_cart.resolve_cart(
             cart_id_header=cart_id_header,
@@ -129,7 +130,7 @@ class CommerceService:
         self,
         payload: CheckoutPreviewRequest,
         *,
-        cart_id_header: int | None,
+        cart_id_header: UUID | None,
         customer: Customer | None,
     ) -> CheckoutPreviewResponse:
         cart = self.storefront_cart.resolve_cart(
@@ -167,7 +168,7 @@ class CommerceService:
         self,
         payload: CheckoutPreviewRequest,
         *,
-        cart_id_header: int | None,
+        cart_id_header: UUID | None,
         customer: Customer | None,
     ) -> CheckoutPreviewResponse:
         if payload.address_id is None and payload.address is None:
@@ -184,7 +185,7 @@ class CommerceService:
         self,
         payload: CheckoutPreviewRequest,
         *,
-        cart_id_header: int | None,
+        cart_id_header: UUID | None,
         customer: Customer,
     ) -> CustomerOrderResponse:
         cart = self.storefront_cart.resolve_cart(
@@ -235,14 +236,14 @@ class CommerceService:
         orders = self.order_repository.list_for_customer(customer.id, status=status)
         return [self._customer_order(o) for o in orders]
 
-    def get_order(self, customer: Customer, order_id: int) -> CustomerOrderResponse:
+    def get_order(self, customer: Customer, order_id: UUID) -> CustomerOrderResponse:
         order = self.order_repository.get(order_id)
         if not order or order.customer_id != customer.id:
             raise NotFoundError("Order not found")
         return self._customer_order(order)
 
     def cancel_order(
-        self, customer: Customer, order_id: int, reason: str | None = None
+        self, customer: Customer, order_id: UUID, reason: str | None = None
     ) -> CustomerOrderResponse:
         order = self.order_repository.get(order_id)
         if not order or order.customer_id != customer.id:

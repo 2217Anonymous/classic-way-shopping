@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, func
+from sqlalchemy import DateTime, Integer, String, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
+from app.core.ids import uuid_fk, uuid_pk
 
 
 class InventorySettings(Base):
@@ -13,7 +15,7 @@ class InventorySettings(Base):
 
     __tablename__ = "inventory_settings"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    id: Mapped[uuid.UUID] = uuid_pk()
     low_stock_threshold: Mapped[int] = mapped_column(Integer, default=10)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
@@ -26,14 +28,12 @@ class InventoryItem(Base):
 
     __tablename__ = "inventory_items"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    product_id: Mapped[int | None] = mapped_column(
-        ForeignKey("products.id", ondelete="SET NULL"), nullable=True, index=True
+    id: Mapped[uuid.UUID] = uuid_pk()
+    product_id: Mapped[uuid.UUID | None] = uuid_fk(
+        "products.id", nullable=True, ondelete="SET NULL"
     )
-    variant_id: Mapped[int | None] = mapped_column(
-        ForeignKey("product_variants.id", ondelete="SET NULL"),
-        nullable=True,
-        index=True,
+    variant_id: Mapped[uuid.UUID | None] = uuid_fk(
+        "product_variants.id", nullable=True, ondelete="SET NULL"
     )
     sku: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
     quantity: Mapped[int] = mapped_column(Integer, default=0)
@@ -48,9 +48,9 @@ class StockMovement(Base):
 
     __tablename__ = "stock_movements"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    inventory_item_id: Mapped[int] = mapped_column(
-        ForeignKey("inventory_items.id", ondelete="CASCADE"), index=True
+    id: Mapped[uuid.UUID] = uuid_pk()
+    inventory_item_id: Mapped[uuid.UUID] = uuid_fk(
+        "inventory_items.id", ondelete="CASCADE"
     )
     delta: Mapped[int] = mapped_column(Integer)
     reason: Mapped[str] = mapped_column(String(160))

@@ -1,3 +1,4 @@
+from uuid import UUID
 from decimal import Decimal
 
 from fastapi import APIRouter, Query
@@ -118,22 +119,22 @@ def get_by_slug(slug: str, db: DbSession) -> ProductResponse:
 
 
 @router.get("/{product_id}", response_model=ProductResponse)
-def get_product(product_id: int, db: DbSession) -> ProductResponse:
+def get_product(product_id: UUID, db: DbSession) -> ProductResponse:
     return get_service(db).get_product(product_id)
 
 
 @router.get("/{product_id}/related", response_model=list[ProductResponse])
-def related(product_id: int, db: DbSession) -> list[ProductResponse]:
+def related(product_id: UUID, db: DbSession) -> list[ProductResponse]:
     return get_service(db).related_products(product_id)
 
 
 @router.get("/{product_id}/reviews", response_model=list[ReviewResponse])
-def reviews(product_id: int, db: DbSession) -> list[ReviewResponse]:
+def reviews(product_id: UUID, db: DbSession) -> list[ReviewResponse]:
     return get_service(db).product_reviews(product_id)
 
 
 @router.get("/{product_id}/variants", response_model=list[ProductVariantResponse])
-def variants(product_id: int, db: DbSession) -> list[ProductVariantResponse]:
+def variants(product_id: UUID, db: DbSession) -> list[ProductVariantResponse]:
     return get_service(db).product_variants(product_id)
 
 

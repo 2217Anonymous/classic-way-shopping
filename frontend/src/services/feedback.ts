@@ -1,7 +1,7 @@
 import { apiRequest } from "@/lib/api";
 
 export type ApiFeedback = {
-  id: number;
+  id: string;
   name: string;
   email: string;
   subject: string;

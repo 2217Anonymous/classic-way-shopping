@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from uuid import UUID
 import hashlib
 from datetime import datetime, timedelta, timezone
 
@@ -77,7 +78,7 @@ class AuthService:
             raise AuthenticationError("Refresh token expired")
 
         try:
-            customer_id = int(payload.get("sub", ""))
+            customer_id = UUID(str(payload.get("sub", "")))
         except (TypeError, ValueError) as exc:
             raise AuthenticationError() from exc
 

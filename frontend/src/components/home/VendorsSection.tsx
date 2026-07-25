@@ -1,43 +1,62 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { vendors } from "@/data";
 import Container from "@/components/ui/Container";
 import SectionTitle from "@/components/ui/SectionTitle";
+import { listBrands } from "@/services/brands";
+import type { ApiBrand } from "@/services/types";
 
 export default function VendorsSection() {
+  const [brands, setBrands] = useState<ApiBrand[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const items = await listBrands();
+        if (!cancelled) setBrands(items.filter((b) => b.is_active));
+      } catch {
+        if (!cancelled) setBrands([]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (!loading && brands.length === 0) {
+    return null;
+  }
+
   return (
     <section className="py-10 md:py-12">
       <Container>
         <SectionTitle
           title="Top"
-          highlight="Vendors"
-          subtitle="Shop from trusted grocery partners near you"
+          highlight="Brands"
+          subtitle="Shop brands managed from Classic Way Admin"
         />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6">
-          {vendors.map((vendor) => (
-            <Link
-              key={vendor.id}
-              href="/shop/left-sidebar-col-3"
-              className="group overflow-hidden rounded-2xl border border-bb-border bg-white hover:shadow-lg transition-all duration-300"
-            >
-              <div className="relative aspect-[4/3] overflow-hidden bg-bb-soft">
-                <Image
-                  src={vendor.image}
-                  alt={vendor.name}
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  sizes="(max-width: 768px) 100vw, 25vw"
-                />
-              </div>
-              <div className="p-4 text-center">
+        {loading ? (
+          <p className="text-center text-bb-muted py-8">Loading brands...</p>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5 md:gap-6">
+            {brands.map((brand) => (
+              <Link
+                key={brand.id}
+                href={`/shop?brand=${brand.slug}`}
+                className="group overflow-hidden rounded-2xl border border-bb-border bg-white hover:shadow-lg transition-all duration-300 p-6 text-center"
+              >
                 <h5 className="text-base font-medium text-bb-text group-hover:text-bb-primary transition-colors">
-                  {vendor.name}
+                  {brand.name}
                 </h5>
-                <p className="text-sm text-bb-muted mt-1">{vendor.products} Products</p>
-              </div>
-            </Link>
-          ))}
-        </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </Container>
     </section>
   );

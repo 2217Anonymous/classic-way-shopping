@@ -17,7 +17,7 @@ export async function listProducts(params: ProductListParams = {}): Promise<{
   };
 }
 
-export async function getProduct(id: number | string): Promise<Product> {
+export async function getProduct(id: string): Promise<Product> {
   const data = await apiRequest<ApiProduct>(`/products/${id}`);
   return mapApiProduct(data);
 }
@@ -52,7 +52,7 @@ export async function searchProducts(q: string, page = 1, limit = 20): Promise<{
   return { items: data.items.map(mapApiProduct), total: data.total };
 }
 
-export async function getRelatedProducts(productId: number | string): Promise<Product[]> {
+export async function getRelatedProducts(productId: string): Promise<Product[]> {
   const data = await apiRequest<ApiProduct[]>(`/products/${productId}/related`);
   return data.map(mapApiProduct);
 }

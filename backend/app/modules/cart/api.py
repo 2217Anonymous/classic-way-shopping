@@ -1,3 +1,4 @@
+from uuid import UUID
 from fastapi import APIRouter, Header
 
 from app.modules.catalog.repositories.product_repository import ProductRepository
@@ -14,11 +15,11 @@ def get_service(db: DbSession) -> StorefrontCartService:
     return StorefrontCartService(CartRepository(db), ProductRepository(db))
 
 
-def _cart_id(x_cart_id: str | None) -> int | None:
+def _cart_id(x_cart_id: str | None) -> UUID | None:
     if not x_cart_id:
         return None
     try:
-        return int(x_cart_id)
+        return UUID(x_cart_id)
     except ValueError:
         return None
 
@@ -59,7 +60,7 @@ def add_item(
 
 @router.put("/items/{item_id}", response_model=CartResponse)
 def update_item(
-    item_id: int,
+    item_id: UUID,
     payload: CartItemUpdate,
     db: DbSession,
     customer: OptionalCustomer,
@@ -72,7 +73,7 @@ def update_item(
 
 @router.delete("/items/{item_id}", response_model=CartResponse)
 def delete_item(
-    item_id: int,
+    item_id: UUID,
     db: DbSession,
     customer: OptionalCustomer,
     x_cart_id: str | None = Header(default=None, alias="X-Cart-Id"),

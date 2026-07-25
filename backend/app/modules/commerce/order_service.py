@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from uuid import UUID
 import random
 import string
 from datetime import datetime, timezone
@@ -119,10 +120,10 @@ class OrderService:
     def list_orders(self, status: str | None = None) -> list[OrderResponse]:
         return [self._to_response(order) for order in self.repository.list(status)]
 
-    def get_order(self, order_id: int) -> OrderResponse:
+    def get_order(self, order_id: UUID) -> OrderResponse:
         return self._to_response(self._get_or_404(order_id))
 
-    def get_order_model(self, order_id: int) -> Order:
+    def get_order_model(self, order_id: UUID) -> Order:
         return self._get_or_404(order_id)
 
     def get_order_by_number(self, order_number: str) -> Order:
@@ -131,7 +132,7 @@ class OrderService:
             raise NotFoundError("Order not found")
         return order
 
-    def cancel_order(self, order_id: int, reason: str | None = None) -> OrderResponse:
+    def cancel_order(self, order_id: UUID, reason: str | None = None) -> OrderResponse:
         order = self._get_or_404(order_id)
         if order.status not in CANCELLABLE_STATUSES:
             raise AppError(
@@ -151,7 +152,7 @@ class OrderService:
         )
         return self._to_response(self.repository.get(order.id) or order)
 
-    def mark_paid(self, order_id: int, note: str | None = None) -> OrderResponse:
+    def mark_paid(self, order_id: UUID, note: str | None = None) -> OrderResponse:
         order = self._get_or_404(order_id)
         if order.status == "paid":
             return self._to_response(order)
@@ -173,7 +174,7 @@ class OrderService:
         )
         return self._to_response(self.repository.get(order.id) or order)
 
-    def mark_refunded(self, order_id: int, note: str | None = None) -> OrderResponse:
+    def mark_refunded(self, order_id: UUID, note: str | None = None) -> OrderResponse:
         order = self._get_or_404(order_id)
         previous = order.status
         order.status = "refunded"
@@ -251,7 +252,7 @@ class OrderService:
         return order_number
 
     def _reserve_stock(
-        self, product_id: int | None, variant_id: int | None, quantity: int
+        self, product_id: UUID | None, variant_id: UUID | None, quantity: int
     ) -> None:
         item = self._get_or_create_inventory_item(product_id, variant_id)
         if item:
@@ -276,7 +277,7 @@ class OrderService:
                 self.inventory_repository.save(item)
 
     def _get_or_create_inventory_item(
-        self, product_id: int | None, variant_id: int | None
+        self, product_id: UUID | None, variant_id: UUID | None
     ):
         """Lazily create the inventory_items row on first order touch, so
         stock reservation/deduction works even if nobody has opened the
@@ -309,7 +310,7 @@ class OrderService:
             reserved=0,
         )
 
-    def _get_or_404(self, order_id: int) -> Order:
+    def _get_or_404(self, order_id: UUID) -> Order:
         order = self.repository.get(order_id)
         if not order:
             raise NotFoundError("Order not found")

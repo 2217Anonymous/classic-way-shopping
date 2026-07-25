@@ -1,3 +1,4 @@
+from uuid import UUID
 from datetime import datetime
 from decimal import Decimal
 from typing import Literal
@@ -23,7 +24,7 @@ class CouponValidateRequest(BaseModel):
 
 class CouponApplyRequest(BaseModel):
     code: str = Field(min_length=1, max_length=40)
-    cart_id: int | None = None
+    cart_id: UUID | None = None
 
 
 class CouponResultResponse(BaseModel):
@@ -35,8 +36,8 @@ class CouponResultResponse(BaseModel):
 
 
 class CheckoutPreviewRequest(BaseModel):
-    cart_id: int | None = None
-    address_id: int | None = None
+    cart_id: UUID | None = None
+    address_id: UUID | None = None
     address: CheckoutAddressInput | None = None
     coupon_code: str | None = Field(default=None, max_length=40)
     payment_method: Literal["razorpay", "cod"] = "cod"
@@ -55,7 +56,7 @@ class CheckoutPreviewResponse(BaseModel):
 
 
 class CustomerOrderItemResponse(BaseModel):
-    id: int
+    id: UUID
     name: str
     quantity: int
     unit_price: Decimal
@@ -65,7 +66,7 @@ class CustomerOrderItemResponse(BaseModel):
 
 
 class CustomerOrderResponse(BaseModel):
-    id: int
+    id: UUID
     order_number: str
     status: str
     payment_method: str
@@ -113,15 +114,15 @@ class CustomerOrderTrackingResponse(BaseModel):
 
 
 class CartMergeRequest(BaseModel):
-    guest_cart_id: int | None = None
+    guest_cart_id: UUID | None = None
 
 
 class PaymentCreateBody(BaseModel):
-    order_id: int
+    order_id: UUID
     provider: Literal["razorpay", "cod"] = "razorpay"
 
 
 class PaymentVerifyBody(BaseModel):
-    order_id: int
+    order_id: UUID
     provider_order_id: str | None = None
     provider_payment_id: str | None = None

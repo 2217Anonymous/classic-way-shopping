@@ -1,3 +1,4 @@
+from uuid import UUID
 from fastapi import APIRouter, Response, status
 
 from app.modules.auth.dependencies import CurrentCustomer, DbSession
@@ -16,7 +17,7 @@ def _repo(db: DbSession) -> AddressRepository:
     return AddressRepository(db)
 
 
-def _get_owned(db: DbSession, customer_id: int, address_id: int):
+def _get_owned(db: DbSession, customer_id: UUID, address_id: UUID):
     row = _repo(db).get(address_id)
     if not row or row.customer_id != customer_id:
         raise NotFoundError("Address not found")
@@ -56,14 +57,14 @@ def create_address(
 
 @router.get("/{address_id}", response_model=AddressResponse)
 def get_address(
-    address_id: int, customer: CurrentCustomer, db: DbSession
+    address_id: UUID, customer: CurrentCustomer, db: DbSession
 ) -> AddressResponse:
     return AddressResponse.model_validate(_get_owned(db, customer.id, address_id))
 
 
 @router.put("/{address_id}", response_model=AddressResponse)
 def update_address(
-    address_id: int,
+    address_id: UUID,
     payload: AddressUpdate,
     customer: CurrentCustomer,
     db: DbSession,
@@ -93,7 +94,7 @@ def update_address(
 
 @router.delete("/{address_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_address(
-    address_id: int, customer: CurrentCustomer, db: DbSession
+    address_id: UUID, customer: CurrentCustomer, db: DbSession
 ) -> Response:
     repo = _repo(db)
     row = _get_owned(db, customer.id, address_id)
@@ -103,7 +104,7 @@ def delete_address(
 
 @router.put("/{address_id}/default", response_model=AddressResponse)
 def set_default(
-    address_id: int, customer: CurrentCustomer, db: DbSession
+    address_id: UUID, customer: CurrentCustomer, db: DbSession
 ) -> AddressResponse:
     repo = _repo(db)
     row = _get_owned(db, customer.id, address_id)

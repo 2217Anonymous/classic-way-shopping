@@ -1,9 +1,9 @@
 import { apiRequest } from "@/lib/api";
 
 export type ApiReview = {
-  id: number;
-  product_id: number;
-  customer_id: number;
+  id: string;
+  product_id: string;
+  customer_id: string;
   customer_name: string | null;
   rating: number;
   title: string | null;
@@ -13,12 +13,12 @@ export type ApiReview = {
   created_at: string;
 };
 
-export async function listProductReviews(productId: number | string): Promise<ApiReview[]> {
+export async function listProductReviews(productId: string): Promise<ApiReview[]> {
   return apiRequest<ApiReview[]>(`/products/${productId}/reviews`);
 }
 
 export async function createReview(payload: {
-  product_id: number;
+  product_id: string;
   rating: number;
   title?: string | null;
   body?: string | null;

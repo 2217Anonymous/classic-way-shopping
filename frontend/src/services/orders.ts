@@ -5,7 +5,7 @@ export async function listOrders(status?: string): Promise<ApiOrder[]> {
   return apiRequest<ApiOrder[]>(`/orders${buildQuery({ status })}`);
 }
 
-export async function getOrder(orderId: number): Promise<ApiOrder> {
+export async function getOrder(orderId: string): Promise<ApiOrder> {
   return apiRequest<ApiOrder>(`/orders/${orderId}`);
 }
 
@@ -15,7 +15,7 @@ export async function trackOrder(orderNumber: string): Promise<ApiOrderTracking>
   );
 }
 
-export async function cancelOrder(orderId: number, reason?: string): Promise<ApiOrder> {
+export async function cancelOrder(orderId: string, reason?: string): Promise<ApiOrder> {
   return apiRequest<ApiOrder>(`/orders/${orderId}/cancel`, {
     method: "POST",
     body: JSON.stringify({ reason: reason ?? null }),

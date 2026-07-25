@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import uuid
 from datetime import datetime
 from decimal import Decimal
 from typing import Any
@@ -8,7 +9,6 @@ from sqlalchemy import (
     JSON,
     Boolean,
     DateTime,
-    ForeignKey,
     Integer,
     Numeric,
     String,
@@ -18,12 +18,13 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
+from app.core.ids import uuid_fk, uuid_pk
 
 
 class Product(Base):
     __tablename__ = "products"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    id: Mapped[uuid.UUID] = uuid_pk()
     name: Mapped[str] = mapped_column(String(160))
     slug: Mapped[str] = mapped_column(String(180), unique=True, index=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -42,15 +43,11 @@ class Product(Base):
     tags: Mapped[str | None] = mapped_column(String(500), nullable=True)
     visibility: Mapped[str] = mapped_column(String(32), default="public")
     published_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
-    category_id: Mapped[int | None] = mapped_column(
-        ForeignKey("categories.id", ondelete="SET NULL"),
-        nullable=True,
-        index=True,
+    category_id: Mapped[uuid.UUID | None] = uuid_fk(
+        "categories.id", nullable=True, ondelete="SET NULL"
     )
-    brand_id: Mapped[int | None] = mapped_column(
-        ForeignKey("brands.id", ondelete="SET NULL"),
-        nullable=True,
-        index=True,
+    brand_id: Mapped[uuid.UUID | None] = uuid_fk(
+        "brands.id", nullable=True, ondelete="SET NULL"
     )
     is_published: Mapped[bool] = mapped_column(Boolean, default=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
@@ -94,11 +91,8 @@ class Product(Base):
 class ProductMedia(Base):
     __tablename__ = "product_media"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    product_id: Mapped[int] = mapped_column(
-        ForeignKey("products.id", ondelete="CASCADE"),
-        index=True,
-    )
+    id: Mapped[uuid.UUID] = uuid_pk()
+    product_id: Mapped[uuid.UUID] = uuid_fk("products.id", ondelete="CASCADE")
     url: Mapped[str] = mapped_column(String(500))
     alt_text: Mapped[str | None] = mapped_column(String(200), nullable=True)
     sort_order: Mapped[int] = mapped_column(Integer, default=0)
@@ -113,11 +107,8 @@ class ProductAttribute(Base):
 
     __tablename__ = "product_attributes"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    product_id: Mapped[int] = mapped_column(
-        ForeignKey("products.id", ondelete="CASCADE"),
-        index=True,
-    )
+    id: Mapped[uuid.UUID] = uuid_pk()
+    product_id: Mapped[uuid.UUID] = uuid_fk("products.id", ondelete="CASCADE")
     name: Mapped[str] = mapped_column(String(80))
     values: Mapped[list[Any]] = mapped_column(JSON, default=list)
     sort_order: Mapped[int] = mapped_column(Integer, default=0)
@@ -131,11 +122,8 @@ class ProductVariant(Base):
 
     __tablename__ = "product_variants"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    product_id: Mapped[int] = mapped_column(
-        ForeignKey("products.id", ondelete="CASCADE"),
-        index=True,
-    )
+    id: Mapped[uuid.UUID] = uuid_pk()
+    product_id: Mapped[uuid.UUID] = uuid_fk("products.id", ondelete="CASCADE")
     sku: Mapped[str] = mapped_column(String(64), unique=True)
     price: Mapped[Decimal | None] = mapped_column(Numeric(12, 2), nullable=True)
     stock: Mapped[int] = mapped_column(Integer, default=0)

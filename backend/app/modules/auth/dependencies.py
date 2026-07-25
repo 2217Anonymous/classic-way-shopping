@@ -1,3 +1,4 @@
+from uuid import UUID
 from typing import Annotated
 
 from fastapi import Depends
@@ -30,7 +31,7 @@ def get_current_customer(
     if payload.get("scope") != "customer":
         raise AuthenticationError("Customer token required")
     try:
-        customer_id = int(payload.get("sub", ""))
+        customer_id = UUID(str(payload.get("sub", "")))
     except (TypeError, ValueError) as exc:
         raise AuthenticationError() from exc
 

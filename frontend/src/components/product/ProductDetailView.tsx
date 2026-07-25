@@ -91,8 +91,8 @@ export default function ProductDetailView({
       setReviewError("Please log in to leave a review.");
       return;
     }
-    const productId = Number(product.id);
-    if (!Number.isFinite(productId)) {
+    const productId = String(product.id);
+    if (!productId) {
       setReviewError("Invalid product.");
       return;
     }

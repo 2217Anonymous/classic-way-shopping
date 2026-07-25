@@ -12,8 +12,8 @@ export async function getCart(): Promise<ApiCart> {
 }
 
 export async function addCartItem(payload: {
-  product_id: number;
-  variant_id?: number | null;
+  product_id: string;
+  variant_id?: string | null;
   quantity?: number;
 }): Promise<ApiCart> {
   const cart = await apiRequest<ApiCart>("/cart/items", {
@@ -28,7 +28,7 @@ export async function addCartItem(payload: {
 }
 
 export async function updateCartItem(
-  itemId: number,
+  itemId: string,
   quantity: number
 ): Promise<ApiCart> {
   const cart = await apiRequest<ApiCart>(`/cart/items/${itemId}`, {
@@ -38,7 +38,7 @@ export async function updateCartItem(
   return rememberCart(cart);
 }
 
-export async function removeCartItem(itemId: number): Promise<ApiCart> {
+export async function removeCartItem(itemId: string): Promise<ApiCart> {
   const cart = await apiRequest<ApiCart>(`/cart/items/${itemId}`, {
     method: "DELETE",
   });
@@ -50,7 +50,7 @@ export async function clearCartApi(): Promise<ApiCart> {
   return rememberCart(cart);
 }
 
-export async function mergeCart(guestCartId?: number | null): Promise<ApiCart> {
+export async function mergeCart(guestCartId?: string | null): Promise<ApiCart> {
   const cart = await apiRequest<ApiCart>("/cart/merge", {
     method: "POST",
     body: JSON.stringify({ guest_cart_id: guestCartId ?? null }),

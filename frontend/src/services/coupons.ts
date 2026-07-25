@@ -10,7 +10,7 @@ export async function validateCoupon(code: string, subtotal: number): Promise<Ap
 
 export async function applyCoupon(
   code: string,
-  cartId?: number | null
+  cartId?: string | null
 ): Promise<ApiCouponResult> {
   return apiRequest<ApiCouponResult>("/coupons/apply", {
     method: "POST",

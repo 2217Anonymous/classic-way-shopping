@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from uuid import UUID
 from decimal import Decimal
 
 from app.modules.catalog.repositories.product_repository import ProductRepository
@@ -14,6 +15,10 @@ from app.modules.cart.schemas import (
 )
 from app.utils.exceptions import NotFoundError
 
+# Ensure referenced tables are registered in shopping metadata (customers, not users).
+from app.modules.customers.models import Customer as _Customer  # noqa: F401
+from app.modules.catalog.models import Product as _Product  # noqa: F401
+
 
 class CartService:
     """VL-015 — cart creation and line-item management."""
@@ -27,15 +32,15 @@ class CartService:
     def create_cart(self, payload: CartCreate) -> CartResponse:
         cart = self.repository.create(
             session_key=payload.session_key,
-            user_id=payload.user_id,
+            user_id=None,  # admin users table is not used by storefront
             customer_id=getattr(payload, "customer_id", None),
         )
         return self._to_response(cart)
 
-    def get_cart(self, cart_id: int) -> CartResponse:
+    def get_cart(self, cart_id: UUID) -> CartResponse:
         return self._to_response(self._get_or_404(cart_id))
 
-    def add_item(self, cart_id: int, payload: CartItemCreate) -> CartResponse:
+    def add_item(self, cart_id: UUID, payload: CartItemCreate) -> CartResponse:
         cart = self._get_or_404(cart_id)
         product = self.product_repository.get(payload.product_id)
         if not product or not product.is_active:
@@ -80,7 +85,7 @@ class CartService:
         return self._to_response(self._get_or_404(cart.id))
 
     def update_item(
-        self, cart_id: int, item_id: int, payload: CartItemUpdate
+        self, cart_id: UUID, item_id: UUID, payload: CartItemUpdate
     ) -> CartResponse:
         self._get_or_404(cart_id)
         item = self.repository.get_item(item_id)
@@ -90,7 +95,7 @@ class CartService:
         self.repository.save_item(item)
         return self._to_response(self._get_or_404(cart_id))
 
-    def delete_item(self, cart_id: int, item_id: int) -> CartResponse:
+    def delete_item(self, cart_id: UUID, item_id: UUID) -> CartResponse:
         self._get_or_404(cart_id)
         item = self.repository.get_item(item_id)
         if not item or item.cart_id != cart_id:
@@ -98,21 +103,21 @@ class CartService:
         self.repository.delete_item(item)
         return self._to_response(self._get_or_404(cart_id))
 
-    def clear_cart(self, cart_id: int) -> CartResponse:
+    def clear_cart(self, cart_id: UUID) -> CartResponse:
         cart = self._get_or_404(cart_id)
         self.repository.clear_items(cart)
         cart.coupon_code = None
         self.repository.save(cart)
         return self._to_response(self._get_or_404(cart_id))
 
-    def set_coupon(self, cart_id: int, coupon_code: str | None) -> CartResponse:
+    def set_coupon(self, cart_id: UUID, coupon_code: str | None) -> CartResponse:
         cart = self._get_or_404(cart_id)
         cart.coupon_code = coupon_code.strip().upper() if coupon_code else None
         self.repository.save(cart)
         return self._to_response(self._get_or_404(cart_id))
 
     def merge_into_customer(
-        self, guest_cart_id: int | None, customer_id: int
+        self, guest_cart_id: UUID | None, customer_id: UUID
     ) -> CartResponse:
         customer_cart = self.repository.get_by_customer_id(customer_id)
         if not customer_cart:
@@ -138,7 +143,7 @@ class CartService:
 
         return self._to_response(self._get_or_404(customer_cart.id))
 
-    def _get_or_404(self, cart_id: int) -> Cart:
+    def _get_or_404(self, cart_id: UUID) -> Cart:
         cart = self.repository.get(cart_id)
         if not cart:
             raise NotFoundError("Cart not found")

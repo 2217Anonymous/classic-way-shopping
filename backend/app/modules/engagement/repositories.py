@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
@@ -22,7 +23,7 @@ class ReviewRepository:
         self,
         *,
         approved_only: bool | None = None,
-        product_id: int | None = None,
+        product_id: UUID | None = None,
     ) -> list[Review]:
         statement = (
             select(Review)
@@ -37,10 +38,10 @@ class ReviewRepository:
             statement = statement.where(Review.is_approved.is_(False))
         return list(self.db.scalars(statement).unique().all())
 
-    def list_approved_for_product(self, product_id: int) -> list[Review]:
+    def list_approved_for_product(self, product_id: UUID) -> list[Review]:
         return self.list_all(approved_only=True, product_id=product_id)
 
-    def get(self, review_id: int) -> Review | None:
+    def get(self, review_id: UUID) -> Review | None:
         statement = (
             select(Review)
             .where(Review.id == review_id)
@@ -49,7 +50,7 @@ class ReviewRepository:
         return self.db.scalars(statement).unique().first()
 
     def get_by_customer_product(
-        self, customer_id: int, product_id: int
+        self, customer_id: UUID, product_id: UUID
     ) -> Review | None:
         statement = select(Review).where(
             Review.customer_id == customer_id,
@@ -60,8 +61,8 @@ class ReviewRepository:
     def create(
         self,
         *,
-        product_id: int,
-        customer_id: int,
+        product_id: UUID,
+        customer_id: UUID,
         rating: int,
         title: str | None = None,
         body: str | None = None,
@@ -93,7 +94,7 @@ class CouponUsageRepository:
         self.db = db
 
     def list_all(
-        self, *, coupon_id: int | None = None, customer_id: int | None = None
+        self, *, coupon_id: UUID | None = None, customer_id: UUID | None = None
     ) -> list[CouponUsage]:
         statement = select(CouponUsage).order_by(CouponUsage.used_at.desc())
         if coupon_id is not None:
@@ -114,7 +115,7 @@ class WishlistRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_or_create(self, customer_id: int) -> Wishlist:
+    def get_or_create(self, customer_id: UUID) -> Wishlist:
         statement = (
             select(Wishlist)
             .where(Wishlist.customer_id == customer_id)
@@ -129,7 +130,7 @@ class WishlistRepository:
         self.db.refresh(wishlist)
         return self.get(wishlist.id) or wishlist
 
-    def get(self, wishlist_id: int) -> Wishlist | None:
+    def get(self, wishlist_id: UUID) -> Wishlist | None:
         statement = (
             select(Wishlist)
             .where(Wishlist.id == wishlist_id)
@@ -137,14 +138,14 @@ class WishlistRepository:
         )
         return self.db.scalars(statement).unique().first()
 
-    def add_item(self, wishlist_id: int, product_id: int) -> WishlistItem:
+    def add_item(self, wishlist_id: UUID, product_id: UUID) -> WishlistItem:
         item = WishlistItem(wishlist_id=wishlist_id, product_id=product_id)
         self.db.add(item)
         self.db.commit()
         self.db.refresh(item)
         return item
 
-    def get_item(self, item_id: int) -> WishlistItem | None:
+    def get_item(self, item_id: UUID) -> WishlistItem | None:
         return self.db.get(WishlistItem, item_id)
 
     def delete_item(self, item: WishlistItem) -> None:
@@ -156,7 +157,7 @@ class CompareRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_or_create(self, customer_id: int) -> CompareList:
+    def get_or_create(self, customer_id: UUID) -> CompareList:
         statement = (
             select(CompareList)
             .where(CompareList.customer_id == customer_id)
@@ -171,7 +172,7 @@ class CompareRepository:
         self.db.refresh(row)
         return self.get(row.id) or row
 
-    def get(self, compare_list_id: int) -> CompareList | None:
+    def get(self, compare_list_id: UUID) -> CompareList | None:
         statement = (
             select(CompareList)
             .where(CompareList.id == compare_list_id)
@@ -179,14 +180,14 @@ class CompareRepository:
         )
         return self.db.scalars(statement).unique().first()
 
-    def add_item(self, compare_list_id: int, product_id: int) -> CompareItem:
+    def add_item(self, compare_list_id: UUID, product_id: UUID) -> CompareItem:
         item = CompareItem(compare_list_id=compare_list_id, product_id=product_id)
         self.db.add(item)
         self.db.commit()
         self.db.refresh(item)
         return item
 
-    def get_item(self, item_id: int) -> CompareItem | None:
+    def get_item(self, item_id: UUID) -> CompareItem | None:
         return self.db.get(CompareItem, item_id)
 
     def delete_item(self, item: CompareItem) -> None:

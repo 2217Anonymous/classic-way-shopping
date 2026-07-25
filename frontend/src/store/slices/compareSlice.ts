@@ -67,15 +67,15 @@ export const toggleCompareItem = createAsyncThunk(
       return { local: true as const, product, exists };
     }
 
-    const productId = Number(product.id);
-    if (!Number.isFinite(productId)) {
+    const productId = String(product.id);
+    if (!productId) {
       return { local: true as const, product, exists };
     }
 
     try {
       if (exists) {
         const current = await compareApi.getCompare();
-        const row = current.items.find((i) => i.product_id === productId);
+        const row = current.items.find((i) => String(i.product_id) === productId);
         if (row) {
           const updated = await compareApi.removeCompareItem(row.id);
           return { local: false as const, items: mapCompare(updated) };

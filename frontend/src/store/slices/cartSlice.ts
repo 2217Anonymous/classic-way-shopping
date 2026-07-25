@@ -7,7 +7,7 @@ import { sameId } from "@/types";
 
 interface CartState {
   items: CartItem[];
-  cartId: number | null;
+  cartId: string | null;
   status: "idle" | "loading" | "succeeded" | "failed";
   error: string | null;
 }
@@ -28,11 +28,8 @@ function persistGuestCart(items: CartItem[]) {
   localStorage.setItem(GUEST_CART_KEY, JSON.stringify(items));
 }
 
-function loadCartId(): number | null {
-  const id = getCartId();
-  if (!id) return null;
-  const n = Number(id);
-  return Number.isFinite(n) ? n : null;
+function loadCartId(): string | null {
+  return getCartId();
 }
 
 const initialState: CartState = {
@@ -41,11 +38,6 @@ const initialState: CartState = {
   status: "idle",
   error: null,
 };
-
-function toProductIdNumber(id: ProductId): number | null {
-  const n = Number(id);
-  return Number.isFinite(n) ? n : null;
-}
 
 export const hydrateCart = createAsyncThunk("cart/hydrate", async () => {
   return {
@@ -70,9 +62,9 @@ export const addItemToCart = createAsyncThunk(
     { getState }
   ) => {
     const { product, quantity = 1, selectedSize } = payload;
-    const productId = toProductIdNumber(product.id);
+    const productId = String(product.id);
 
-    if (productId == null) {
+    if (!productId) {
       return {
         localOnly: true as const,
         product,
@@ -111,7 +103,7 @@ export const addItemToCart = createAsyncThunk(
 export const updateCartQty = createAsyncThunk(
   "cart/updateQty",
   async (
-    payload: { id: ProductId; quantity: number; selectedSize?: string; cartItemId?: number },
+    payload: { id: ProductId; quantity: number; selectedSize?: string; cartItemId?: string },
     { getState, rejectWithValue }
   ) => {
     const state = getState() as { cart: CartState };
@@ -142,7 +134,7 @@ export const updateCartQty = createAsyncThunk(
 export const removeCartItem = createAsyncThunk(
   "cart/removeItem",
   async (
-    payload: { id: ProductId; selectedSize?: string; cartItemId?: number },
+    payload: { id: ProductId; selectedSize?: string; cartItemId?: string },
     { getState, rejectWithValue }
   ) => {
     const state = getState() as { cart: CartState };
@@ -183,7 +175,7 @@ export const mergeGuestCart = createAsyncThunk(
   "cart/merge",
   async (_, { getState }) => {
     const guestId = getCartId();
-    const cart = await cartApi.mergeCart(guestId ? Number(guestId) : null);
+    const cart = await cartApi.mergeCart(guestId || null);
     const state = getState() as { cart: CartState };
     return {
       cart,
@@ -239,7 +231,7 @@ const cartSlice = createSlice({
     },
     setCartFromApi: (
       state,
-      action: PayloadAction<{ cartId: number; items: CartItem[] }>
+      action: PayloadAction<{ cartId: string; items: CartItem[] }>
     ) => {
       state.cartId = action.payload.cartId;
       state.items = action.payload.items;

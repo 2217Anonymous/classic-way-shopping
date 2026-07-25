@@ -40,7 +40,7 @@ export function getCartId(): string | null {
   return localStorage.getItem(CART_ID_KEY);
 }
 
-export function setCartId(id: string | number | null | undefined) {
+export function setCartId(id: string | null | undefined) {
   if (typeof window === "undefined") return;
   if (id == null || id === "") {
     localStorage.removeItem(CART_ID_KEY);
@@ -51,7 +51,7 @@ export function setCartId(id: string | number | null | undefined) {
 
 export type ApiRequestOptions = RequestInit & {
   token?: string | null;
-  cartId?: string | number | null;
+  cartId?: string | null;
   skipAuth?: boolean;
 };
 

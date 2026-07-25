@@ -1,3 +1,4 @@
+from uuid import UUID
 from typing import Any
 
 from fastapi import APIRouter, Header, Query
@@ -46,11 +47,11 @@ def get_service(db: DbSession) -> CommerceService:
     )
 
 
-def _cart_id(x_cart_id: str | None) -> int | None:
+def _cart_id(x_cart_id: str | None) -> UUID | None:
     if not x_cart_id:
         return None
     try:
-        return int(x_cart_id)
+        return UUID(x_cart_id)
     except ValueError:
         return None
 
@@ -163,14 +164,14 @@ def track_order(
 
 @orders_router.get("/{order_id}", response_model=CustomerOrderResponse)
 def get_order(
-    order_id: int, customer: CurrentCustomer, db: DbSession
+    order_id: UUID, customer: CurrentCustomer, db: DbSession
 ) -> CustomerOrderResponse:
     return get_service(db).get_order(customer, order_id)
 
 
 @orders_router.post("/{order_id}/cancel", response_model=CustomerOrderResponse)
 def cancel_order(
-    order_id: int,
+    order_id: UUID,
     payload: OrderCancelBody,
     customer: CurrentCustomer,
     db: DbSession,

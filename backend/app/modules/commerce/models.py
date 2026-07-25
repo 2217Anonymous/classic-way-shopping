@@ -1,12 +1,14 @@
 from __future__ import annotations
 
+import uuid
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import DateTime, ForeignKey, Integer, Numeric, String, Text, func
+from sqlalchemy import DateTime, Integer, Numeric, String, Text, Uuid, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
+from app.core.ids import uuid_fk, uuid_pk
 
 
 class Order(Base):
@@ -14,13 +16,14 @@ class Order(Base):
 
     __tablename__ = "orders"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    id: Mapped[uuid.UUID] = uuid_pk()
     order_number: Mapped[str] = mapped_column(String(40), unique=True, index=True)
-    user_id: Mapped[int | None] = mapped_column(
-        ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True
+    # Legacy admin column; storefront ownership is customer_id only (no ORM FK to users).
+    user_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid(as_uuid=True), nullable=True, index=True
     )
-    customer_id: Mapped[int | None] = mapped_column(
-        ForeignKey("customers.id", ondelete="SET NULL"), nullable=True, index=True
+    customer_id: Mapped[uuid.UUID | None] = uuid_fk(
+        "customers.id", nullable=True, ondelete="SET NULL"
     )
     status: Mapped[str] = mapped_column(String(20), default="draft", index=True)
     payment_method: Mapped[str] = mapped_column(String(20), default="cod")
@@ -66,17 +69,13 @@ class OrderItem(Base):
 
     __tablename__ = "order_items"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    order_id: Mapped[int] = mapped_column(
-        ForeignKey("orders.id", ondelete="CASCADE"), index=True
+    id: Mapped[uuid.UUID] = uuid_pk()
+    order_id: Mapped[uuid.UUID] = uuid_fk("orders.id", ondelete="CASCADE")
+    product_id: Mapped[uuid.UUID | None] = uuid_fk(
+        "products.id", nullable=True, ondelete="SET NULL"
     )
-    product_id: Mapped[int | None] = mapped_column(
-        ForeignKey("products.id", ondelete="SET NULL"), nullable=True, index=True
-    )
-    variant_id: Mapped[int | None] = mapped_column(
-        ForeignKey("product_variants.id", ondelete="SET NULL"),
-        nullable=True,
-        index=True,
+    variant_id: Mapped[uuid.UUID | None] = uuid_fk(
+        "product_variants.id", nullable=True, ondelete="SET NULL"
     )
     sku: Mapped[str | None] = mapped_column(String(64), nullable=True)
     name: Mapped[str] = mapped_column(String(160))
@@ -92,10 +91,8 @@ class OrderStatusHistory(Base):
 
     __tablename__ = "order_status_history"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    order_id: Mapped[int] = mapped_column(
-        ForeignKey("orders.id", ondelete="CASCADE"), index=True
-    )
+    id: Mapped[uuid.UUID] = uuid_pk()
+    order_id: Mapped[uuid.UUID] = uuid_fk("orders.id", ondelete="CASCADE")
     from_status: Mapped[str | None] = mapped_column(String(20), nullable=True)
     to_status: Mapped[str] = mapped_column(String(20))
     note: Mapped[str | None] = mapped_column(String(255), nullable=True)

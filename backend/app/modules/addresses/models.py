@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, String, func
+from sqlalchemy import Boolean, DateTime, String, Uuid, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
+from app.core.ids import uuid_fk, uuid_pk
 
 
 class CustomerAddress(Base):
@@ -13,12 +15,13 @@ class CustomerAddress(Base):
 
     __tablename__ = "customer_addresses"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    user_id: Mapped[int | None] = mapped_column(
-        ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True
+    id: Mapped[uuid.UUID] = uuid_pk()
+    # Legacy admin column; storefront uses customer_id only (no ORM FK to users).
+    user_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid(as_uuid=True), nullable=True, index=True
     )
-    customer_id: Mapped[int | None] = mapped_column(
-        ForeignKey("customers.id", ondelete="CASCADE"), nullable=True, index=True
+    customer_id: Mapped[uuid.UUID | None] = uuid_fk(
+        "customers.id", nullable=True, ondelete="CASCADE"
     )
     full_name: Mapped[str] = mapped_column(String(160))
     phone: Mapped[str] = mapped_column(String(40))

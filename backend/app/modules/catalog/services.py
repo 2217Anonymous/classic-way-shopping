@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from uuid import UUID
 import math
 from decimal import Decimal
 
@@ -149,7 +150,7 @@ class StorefrontCatalogService:
             items=items, total=total, page=page, limit=limit, pages=pages
         )
 
-    def get_product(self, product_id: int) -> ProductResponse:
+    def get_product(self, product_id: UUID) -> ProductResponse:
         product = self.product_repository.get(product_id)
         if not product or not self._is_public(product):
             raise NotFoundError("Product not found")
@@ -161,7 +162,7 @@ class StorefrontCatalogService:
             raise NotFoundError("Product not found")
         return self._product_service._to_response(product)
 
-    def related_products(self, product_id: int, limit: int = 8) -> list[ProductResponse]:
+    def related_products(self, product_id: UUID, limit: int = 8) -> list[ProductResponse]:
         product = self.product_repository.get(product_id)
         if not product or not self._is_public(product):
             raise NotFoundError("Product not found")
@@ -183,11 +184,11 @@ class StorefrontCatalogService:
         rows = list(self.db.scalars(statement).unique().all())
         return [self._product_service._to_response(p) for p in rows]
 
-    def product_variants(self, product_id: int) -> list[ProductVariantResponse]:
+    def product_variants(self, product_id: UUID) -> list[ProductVariantResponse]:
         product = self.get_product(product_id)
         return product.variants
 
-    def product_reviews(self, product_id: int) -> list[ReviewResponse]:
+    def product_reviews(self, product_id: UUID) -> list[ReviewResponse]:
         self.get_product(product_id)
         reviews = self.review_repository.list_approved_for_product(product_id)
         return [self._review_response(r) for r in reviews]
@@ -234,7 +235,7 @@ class StorefrontCatalogService:
             if b.is_active
         ]
 
-    def _avg_rating(self, product_id: int) -> float:
+    def _avg_rating(self, product_id: UUID) -> float:
         reviews = self.review_repository.list_approved_for_product(product_id)
         if not reviews:
             return 0.0

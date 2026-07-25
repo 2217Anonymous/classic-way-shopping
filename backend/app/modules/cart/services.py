@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from uuid import UUID
 from app.modules.catalog.repositories.product_repository import ProductRepository
 from app.modules.customers.models import Customer
 from app.modules.cart.repositories import CartRepository
@@ -20,7 +21,7 @@ class StorefrontCartService:
     def resolve_cart(
         self,
         *,
-        cart_id_header: int | None,
+        cart_id_header: UUID | None,
         customer: Customer | None,
         create_if_missing: bool = True,
     ) -> CartResponse:
@@ -46,7 +47,7 @@ class StorefrontCartService:
         raise NotFoundError("Cart not found")
 
     def get_cart(
-        self, *, cart_id_header: int | None, customer: Customer | None
+        self, *, cart_id_header: UUID | None, customer: Customer | None
     ) -> CartResponse:
         return self.resolve_cart(
             cart_id_header=cart_id_header,
@@ -55,7 +56,7 @@ class StorefrontCartService:
         )
 
     def clear_cart(
-        self, *, cart_id_header: int | None, customer: Customer | None
+        self, *, cart_id_header: UUID | None, customer: Customer | None
     ) -> CartResponse:
         cart = self.resolve_cart(
             cart_id_header=cart_id_header,
@@ -68,7 +69,7 @@ class StorefrontCartService:
         self,
         payload: CartItemCreate,
         *,
-        cart_id_header: int | None,
+        cart_id_header: UUID | None,
         customer: Customer | None,
     ) -> CartResponse:
         cart = self.resolve_cart(
@@ -80,10 +81,10 @@ class StorefrontCartService:
 
     def update_item(
         self,
-        item_id: int,
+        item_id: UUID,
         payload: CartItemUpdate,
         *,
-        cart_id_header: int | None,
+        cart_id_header: UUID | None,
         customer: Customer | None,
     ) -> CartResponse:
         cart = self.resolve_cart(
@@ -95,9 +96,9 @@ class StorefrontCartService:
 
     def delete_item(
         self,
-        item_id: int,
+        item_id: UUID,
         *,
-        cart_id_header: int | None,
+        cart_id_header: UUID | None,
         customer: Customer | None,
     ) -> CartResponse:
         cart = self.resolve_cart(
@@ -110,8 +111,8 @@ class StorefrontCartService:
     def merge(
         self,
         *,
-        guest_cart_id: int | None,
-        cart_id_header: int | None,
+        guest_cart_id: UUID | None,
+        cart_id_header: UUID | None,
         customer: Customer,
     ) -> CartResponse:
         guest_id = guest_cart_id or cart_id_header

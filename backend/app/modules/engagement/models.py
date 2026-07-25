@@ -1,12 +1,12 @@
 from __future__ import annotations
 
+import uuid
 from datetime import datetime
 from decimal import Decimal
 
 from sqlalchemy import (
     Boolean,
     DateTime,
-    ForeignKey,
     Integer,
     Numeric,
     String,
@@ -17,14 +17,15 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
+from app.core.ids import uuid_fk, uuid_pk
 
 
 class Wishlist(Base):
     __tablename__ = "wishlists"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    customer_id: Mapped[int] = mapped_column(
-        ForeignKey("customers.id", ondelete="CASCADE"), unique=True, index=True
+    id: Mapped[uuid.UUID] = uuid_pk()
+    customer_id: Mapped[uuid.UUID] = uuid_fk(
+        "customers.id", unique=True, ondelete="CASCADE"
     )
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
@@ -45,13 +46,9 @@ class WishlistItem(Base):
         UniqueConstraint("wishlist_id", "product_id", name="uq_wishlist_product"),
     )
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    wishlist_id: Mapped[int] = mapped_column(
-        ForeignKey("wishlists.id", ondelete="CASCADE"), index=True
-    )
-    product_id: Mapped[int] = mapped_column(
-        ForeignKey("products.id", ondelete="CASCADE"), index=True
-    )
+    id: Mapped[uuid.UUID] = uuid_pk()
+    wishlist_id: Mapped[uuid.UUID] = uuid_fk("wishlists.id", ondelete="CASCADE")
+    product_id: Mapped[uuid.UUID] = uuid_fk("products.id", ondelete="CASCADE")
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
     wishlist: Mapped[Wishlist] = relationship("Wishlist", back_populates="items")
@@ -60,9 +57,9 @@ class WishlistItem(Base):
 class CompareList(Base):
     __tablename__ = "compare_lists"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    customer_id: Mapped[int] = mapped_column(
-        ForeignKey("customers.id", ondelete="CASCADE"), unique=True, index=True
+    id: Mapped[uuid.UUID] = uuid_pk()
+    customer_id: Mapped[uuid.UUID] = uuid_fk(
+        "customers.id", unique=True, ondelete="CASCADE"
     )
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
@@ -83,13 +80,11 @@ class CompareItem(Base):
         UniqueConstraint("compare_list_id", "product_id", name="uq_compare_product"),
     )
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    compare_list_id: Mapped[int] = mapped_column(
-        ForeignKey("compare_lists.id", ondelete="CASCADE"), index=True
+    id: Mapped[uuid.UUID] = uuid_pk()
+    compare_list_id: Mapped[uuid.UUID] = uuid_fk(
+        "compare_lists.id", ondelete="CASCADE"
     )
-    product_id: Mapped[int] = mapped_column(
-        ForeignKey("products.id", ondelete="CASCADE"), index=True
-    )
+    product_id: Mapped[uuid.UUID] = uuid_fk("products.id", ondelete="CASCADE")
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
     compare_list: Mapped[CompareList] = relationship(
@@ -100,13 +95,9 @@ class CompareItem(Base):
 class Review(Base):
     __tablename__ = "reviews"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    product_id: Mapped[int] = mapped_column(
-        ForeignKey("products.id", ondelete="CASCADE"), index=True
-    )
-    customer_id: Mapped[int] = mapped_column(
-        ForeignKey("customers.id", ondelete="CASCADE"), index=True
-    )
+    id: Mapped[uuid.UUID] = uuid_pk()
+    product_id: Mapped[uuid.UUID] = uuid_fk("products.id", ondelete="CASCADE")
+    customer_id: Mapped[uuid.UUID] = uuid_fk("customers.id", ondelete="CASCADE")
     rating: Mapped[int] = mapped_column(Integer)
     title: Mapped[str | None] = mapped_column(String(200), nullable=True)
     body: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -128,10 +119,8 @@ class Review(Base):
 class ReviewImage(Base):
     __tablename__ = "review_images"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    review_id: Mapped[int] = mapped_column(
-        ForeignKey("reviews.id", ondelete="CASCADE"), index=True
-    )
+    id: Mapped[uuid.UUID] = uuid_pk()
+    review_id: Mapped[uuid.UUID] = uuid_fk("reviews.id", ondelete="CASCADE")
     url: Mapped[str] = mapped_column(String(500))
     sort_order: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
@@ -142,15 +131,11 @@ class ReviewImage(Base):
 class CouponUsage(Base):
     __tablename__ = "coupon_usages"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    coupon_id: Mapped[int] = mapped_column(
-        ForeignKey("coupons.id", ondelete="CASCADE"), index=True
-    )
-    customer_id: Mapped[int] = mapped_column(
-        ForeignKey("customers.id", ondelete="CASCADE"), index=True
-    )
-    order_id: Mapped[int | None] = mapped_column(
-        ForeignKey("orders.id", ondelete="SET NULL"), nullable=True, index=True
+    id: Mapped[uuid.UUID] = uuid_pk()
+    coupon_id: Mapped[uuid.UUID] = uuid_fk("coupons.id", ondelete="CASCADE")
+    customer_id: Mapped[uuid.UUID] = uuid_fk("customers.id", ondelete="CASCADE")
+    order_id: Mapped[uuid.UUID | None] = uuid_fk(
+        "orders.id", nullable=True, ondelete="SET NULL"
     )
     used_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     discount_amount: Mapped[Decimal | None] = mapped_column(
@@ -161,9 +146,9 @@ class CouponUsage(Base):
 class Feedback(Base):
     __tablename__ = "feedbacks"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    customer_id: Mapped[int | None] = mapped_column(
-        ForeignKey("customers.id", ondelete="SET NULL"), nullable=True, index=True
+    id: Mapped[uuid.UUID] = uuid_pk()
+    customer_id: Mapped[uuid.UUID | None] = uuid_fk(
+        "customers.id", nullable=True, ondelete="SET NULL"
     )
     name: Mapped[str] = mapped_column(String(160))
     email: Mapped[str] = mapped_column(String(255))

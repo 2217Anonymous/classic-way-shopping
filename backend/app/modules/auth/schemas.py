@@ -1,10 +1,11 @@
+from uuid import UUID
 from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 class CustomerResponse(BaseModel):
-    id: int
+    id: UUID
     email: EmailStr
     full_name: str
     phone: str | None

@@ -5,14 +5,14 @@ export async function getWishlist(): Promise<ApiWishlist> {
   return apiRequest<ApiWishlist>("/wishlist");
 }
 
-export async function addWishlistItem(productId: number): Promise<ApiWishlist> {
+export async function addWishlistItem(productId: string): Promise<ApiWishlist> {
   return apiRequest<ApiWishlist>("/wishlist/items", {
     method: "POST",
     body: JSON.stringify({ product_id: productId }),
   });
 }
 
-export async function removeWishlistItem(itemId: number): Promise<ApiWishlist> {
+export async function removeWishlistItem(itemId: string): Promise<ApiWishlist> {
   return apiRequest<ApiWishlist>(`/wishlist/items/${itemId}`, {
     method: "DELETE",
   });

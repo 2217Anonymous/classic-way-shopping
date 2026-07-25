@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import uuid
 from datetime import datetime
 from decimal import Decimal
 
@@ -7,12 +8,13 @@ from sqlalchemy import Boolean, DateTime, Integer, Numeric, String, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
+from app.core.ids import uuid_pk
 
 
 class StoreSettings(Base):
     __tablename__ = "store_settings"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    id: Mapped[uuid.UUID] = uuid_pk()
     store_name: Mapped[str] = mapped_column(String(160))
     legal_name: Mapped[str | None] = mapped_column(String(200), nullable=True)
     email: Mapped[str | None] = mapped_column(String(255), nullable=True)
@@ -34,7 +36,7 @@ class StoreSettings(Base):
 class TaxRule(Base):
     __tablename__ = "tax_rules"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    id: Mapped[uuid.UUID] = uuid_pk()
     name: Mapped[str] = mapped_column(String(120))
     code: Mapped[str] = mapped_column(String(40), unique=True, index=True)
     rate_percent: Mapped[Decimal] = mapped_column(Numeric(5, 2))
@@ -52,7 +54,7 @@ class TaxRule(Base):
 class Coupon(Base):
     __tablename__ = "coupons"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    id: Mapped[uuid.UUID] = uuid_pk()
     code: Mapped[str] = mapped_column(String(40), unique=True, index=True)
     name: Mapped[str] = mapped_column(String(160))
     discount_type: Mapped[str] = mapped_column(String(16))

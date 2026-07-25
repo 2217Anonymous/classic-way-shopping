@@ -1,14 +1,4 @@
-# Build from classic-way-shopping/backend:
-#   docker build -t classic-way-shopping-api .
-#
-# Or from monorepo root:
-#   docker build -f classic-way-shopping/backend/Dockerfile classic-way-shopping/backend
-#
-# Local run:
-#   uvicorn main:app --reload --port 8001
-#
-# Uploads: mount the same volume as admin at /app/uploads so media URLs match.
-
+# classic-way-shopping backend (Postgres — same classic_way DB as admin)
 FROM python:3.13-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -17,11 +7,18 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-COPY requirements.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir -r /tmp/requirements.txt
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . /app
+COPY app ./app
+COPY main.py .
+
+RUN mkdir -p /app/uploads/categories /app/uploads/products
 
 EXPOSE 8001
 
+HEALTHCHECK --interval=10s --timeout=5s --start-period=20s --retries=5 \
+  CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8001/health')"
+
+# Schema migrations are owned by classic-way-admin (Alembic).
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8001"]

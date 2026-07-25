@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from uuid import UUID
 from app.modules.catalog.repositories.product_repository import ProductRepository
 from app.modules.customers.models import Customer
 from app.modules.engagement.repositories import (
@@ -59,7 +60,7 @@ class EngagementService:
             self.wishlist_repository.get(wishlist.id) or wishlist
         )
 
-    def remove_wishlist_item(self, customer: Customer, item_id: int) -> WishlistResponse:
+    def remove_wishlist_item(self, customer: Customer, item_id: UUID) -> WishlistResponse:
         wishlist = self.wishlist_repository.get_or_create(customer.id)
         item = self.wishlist_repository.get_item(item_id)
         if not item or item.wishlist_id != wishlist.id:
@@ -87,7 +88,7 @@ class EngagementService:
         self.compare_repository.add_item(compare.id, payload.product_id)
         return self._compare_response(self.compare_repository.get(compare.id) or compare)
 
-    def remove_compare_item(self, customer: Customer, item_id: int) -> CompareResponse:
+    def remove_compare_item(self, customer: Customer, item_id: UUID) -> CompareResponse:
         compare = self.compare_repository.get_or_create(customer.id)
         item = self.compare_repository.get_item(item_id)
         if not item or item.compare_list_id != compare.id:

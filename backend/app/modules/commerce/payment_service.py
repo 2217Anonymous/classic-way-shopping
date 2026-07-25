@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from uuid import UUID
 import random
 import string
 
@@ -104,7 +105,7 @@ class PaymentService:
 
         return WebhookAck(status="processed", event_id=payload.event_id)
 
-    def refund(self, payment_id: int, payload: RefundRequest) -> RefundResponse:
+    def refund(self, payment_id: UUID, payload: RefundRequest) -> RefundResponse:
         payment = self.repository.get(payment_id)
         if not payment:
             raise NotFoundError("Payment not found")

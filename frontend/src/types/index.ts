@@ -1,6 +1,6 @@
 export type ProductFlag = "New" | "Hot" | "Sale" | null;
 
-export type ProductId = string | number;
+export type ProductId = string;
 
 export interface Product {
   id: ProductId;
@@ -47,8 +47,8 @@ export interface BlogPost {
 export interface CartItem extends Product {
   quantity: number;
   selectedSize?: string;
-  cartItemId?: number;
-  variantId?: number;
+  cartItemId?: string;
+  variantId?: string;
 }
 
 export interface Vendor {

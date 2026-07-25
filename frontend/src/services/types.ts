@@ -1,25 +1,25 @@
 export type ApiCategory = {
-  id: number;
+  id: string;
   name: string;
   slug: string;
   description: string | null;
   image_url: string | null;
-  parent_id: number | null;
+  parent_id: string | null;
   is_active: boolean;
   sort_order: number;
   product_count?: number;
 };
 
 export type ApiBrand = {
-  id: number;
+  id: string;
   name: string;
   slug: string;
   is_active: boolean;
 };
 
 export type ApiProductMedia = {
-  id: number;
-  product_id: number;
+  id: string;
+  product_id: string;
   url: string;
   alt_text: string | null;
   sort_order: number;
@@ -27,16 +27,16 @@ export type ApiProductMedia = {
 };
 
 export type ApiProductAttribute = {
-  id: number;
-  product_id: number;
+  id: string;
+  product_id: string;
   name: string;
   values: unknown[];
   sort_order: number;
 };
 
 export type ApiProductVariant = {
-  id: number;
-  product_id: number;
+  id: string;
+  product_id: string;
   sku: string;
   price: number | string | null;
   stock: number;
@@ -46,7 +46,7 @@ export type ApiProductVariant = {
 };
 
 export type ApiProduct = {
-  id: number;
+  id: string;
   name: string;
   slug: string;
   description: string | null;
@@ -57,7 +57,7 @@ export type ApiProduct = {
   sku: string | null;
   stock?: number;
   tags?: string | null;
-  category_id: number | null;
+  category_id: string | null;
   category_name?: string | null;
   is_published: boolean;
   is_active: boolean;
@@ -79,10 +79,10 @@ export type ApiProductList = {
 };
 
 export type ApiCartItem = {
-  id: number;
-  cart_id: number;
-  product_id: number;
-  variant_id: number | null;
+  id: string;
+  cart_id: string;
+  product_id: string;
+  variant_id: string | null;
   quantity: number;
   unit_price: number | string;
   product_name: string;
@@ -91,17 +91,17 @@ export type ApiCartItem = {
 };
 
 export type ApiCart = {
-  id: number;
+  id: string;
   session_key: string | null;
-  user_id: number | null;
-  customer_id?: number | null;
+  user_id: string | null;
+  customer_id?: string | null;
   items: ApiCartItem[];
   subtotal: number | string;
   item_count: number;
 };
 
 export type ApiCustomer = {
-  id: number;
+  id: string;
   email: string;
   full_name: string;
   phone: string | null;
@@ -117,8 +117,8 @@ export type ApiTokenPair = {
 };
 
 export type ApiWishlistItem = {
-  id: number;
-  product_id: number;
+  id: string;
+  product_id: string;
   product_name?: string | null;
   product_slug?: string | null;
   product_price?: number | string | null;
@@ -126,15 +126,15 @@ export type ApiWishlistItem = {
 };
 
 export type ApiWishlist = {
-  id: number;
-  customer_id: number;
+  id: string;
+  customer_id: string;
   items: ApiWishlistItem[];
   item_count: number;
 };
 
 export type ApiCompareItem = {
-  id: number;
-  product_id: number;
+  id: string;
+  product_id: string;
   product_name?: string | null;
   product_slug?: string | null;
   product_price?: number | string | null;
@@ -142,8 +142,8 @@ export type ApiCompareItem = {
 };
 
 export type ApiCompare = {
-  id: number;
-  customer_id: number;
+  id: string;
+  customer_id: string;
   items: ApiCompareItem[];
   item_count: number;
 };
@@ -171,8 +171,8 @@ export type ApiCheckoutAddress = {
 };
 
 export type ApiCheckoutCreate = {
-  cart_id?: number | null;
-  address_id?: number | null;
+  cart_id?: string | null;
+  address_id?: string | null;
   address?: ApiCheckoutAddress | null;
   coupon_code?: string | null;
   payment_method?: "razorpay" | "cod";
@@ -180,7 +180,7 @@ export type ApiCheckoutCreate = {
 };
 
 export type ApiOrder = {
-  id: number;
+  id: string;
   order_number: string;
   status: string;
   payment_method: string;
@@ -191,7 +191,7 @@ export type ApiOrder = {
   total: number | string;
   currency: string;
   items: Array<{
-    id: number;
+    id: string;
     name: string;
     quantity: number;
     unit_price: number | string;

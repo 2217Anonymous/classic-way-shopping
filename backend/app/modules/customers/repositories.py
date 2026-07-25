@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from uuid import UUID
 from datetime import datetime, timezone
 
 from sqlalchemy import or_, select
@@ -32,7 +33,7 @@ class CustomerRepository:
         statement = statement.order_by(Customer.created_at.desc())
         return list(self.db.scalars(statement).all())
 
-    def get(self, customer_id: int) -> Customer | None:
+    def get(self, customer_id: UUID) -> Customer | None:
         customer = self.db.get(Customer, customer_id)
         if customer and customer.deleted_at is None:
             return customer
@@ -72,7 +73,7 @@ class CustomerRepository:
     def create_refresh_token(
         self,
         *,
-        customer_id: int,
+        customer_id: UUID,
         token_hash: str,
         expires_at: datetime,
     ) -> RefreshToken:
@@ -95,7 +96,7 @@ class CustomerRepository:
         self.db.add(token)
         self.db.commit()
 
-    def revoke_all_refresh_tokens(self, customer_id: int) -> None:
+    def revoke_all_refresh_tokens(self, customer_id: UUID) -> None:
         statement = select(RefreshToken).where(
             RefreshToken.customer_id == customer_id,
             RefreshToken.revoked_at.is_(None),

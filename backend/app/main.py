@@ -17,6 +17,18 @@ from app.modules.customers import api as customers
 from app.modules.engagement import api as engagement
 from app.utils.exceptions import AppError
 
+# Register ORM models so ForeignKeys resolve (customers/products — not admin users).
+from app.modules.customers.models import Customer as _Customer  # noqa: F401
+from app.modules.catalog.models import (  # noqa: F401
+    Brand as _Brand,
+    Category as _Category,
+    Product as _Product,
+    ProductVariant as _ProductVariant,
+)
+from app.modules.cart.models import Cart as _Cart, CartItem as _CartItem  # noqa: F401
+from app.modules.addresses.models import CustomerAddress as _Address  # noqa: F401
+from app.modules.commerce.models import Order as _Order  # noqa: F401
+
 # Shared with admin: mount the same uploads directory (or volume) so product/category
 # media URLs resolve. Relative to process cwd — typically point both services at one volume.
 UPLOAD_ROOT = Path("uploads")
