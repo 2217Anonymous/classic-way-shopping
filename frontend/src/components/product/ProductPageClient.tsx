@@ -4,11 +4,16 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import ProductDetailView from "@/components/product/ProductDetailView";
 import { PRODUCT_LAYOUTS } from "@/lib/shopConfig";
+import { resolveProductLayout } from "@/lib/themeResolver";
+import { useAppSelector } from "@/store/hooks";
+import { selectTheme } from "@/store/slices/themeSlice";
 import { getProductBySlug } from "@/services/products";
 import type { Product, ProductLayoutConfig } from "@/types";
 
 export default function ProductPageClient({ slug }: { slug: string }) {
+  const theme = useAppSelector(selectTheme);
   const layoutHint: ProductLayoutConfig | undefined = PRODUCT_LAYOUTS[slug];
+  const layout = layoutHint ?? resolveProductLayout(theme);
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [missing, setMissing] = useState(false);
@@ -54,10 +59,5 @@ export default function ProductPageClient({ slug }: { slug: string }) {
     );
   }
 
-  return (
-    <ProductDetailView
-      product={product}
-      layout={layoutHint ?? { sidebar: "none" }}
-    />
-  );
+  return <ProductDetailView product={product} layout={layout} />;
 }

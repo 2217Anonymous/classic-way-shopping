@@ -4,104 +4,13 @@ import Link from "next/link";
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { closeMobileMenu } from "@/store/slices/uiSlice";
+import { useTheme } from "@/hooks/useTheme";
+import {
+  resolveHomePath,
+  resolveShopPath,
+  visiblePageLinks,
+} from "@/lib/themeResolver";
 import { cn } from "@/lib/utils";
-
-type NavLink = { label: string; href: string };
-type NavGroup = { label: string; links: NavLink[] };
-
-const shopGroups: NavGroup[] = [
-  {
-    label: "Classic",
-    links: [
-      { label: "Left sidebar 3 column", href: "/shop/left-sidebar-col-3" },
-      { label: "Left sidebar 4 column", href: "/shop/left-sidebar-col-4" },
-      { label: "Right sidebar 3 column", href: "/shop/right-sidebar-col-3" },
-      { label: "Right sidebar 4 column", href: "/shop/right-sidebar-col-4" },
-      { label: "Full width 4 column", href: "/shop/full-width" },
-    ],
-  },
-  {
-    label: "Banner",
-    links: [
-      { label: "Left sidebar 3 column", href: "/shop/banner-left-sidebar-col-3" },
-      { label: "Left sidebar 4 column", href: "/shop/banner-left-sidebar-col-4" },
-      { label: "Right sidebar 3 column", href: "/shop/banner-right-sidebar-col-3" },
-      { label: "Right sidebar 4 column", href: "/shop/banner-right-sidebar-col-4" },
-      { label: "Full width 4 column", href: "/shop/banner-full-width" },
-    ],
-  },
-  {
-    label: "Columns",
-    links: [
-      { label: "3 Columns full width", href: "/shop/full-width-col-3" },
-      { label: "4 Columns full width", href: "/shop/full-width-col-4" },
-      { label: "5 Columns full width", href: "/shop/full-width-col-5" },
-      { label: "6 Columns full width", href: "/shop/full-width-col-6" },
-      { label: "Banner 3 Columns", href: "/shop/banner-full-width-col-3" },
-    ],
-  },
-  {
-    label: "List",
-    links: [
-      { label: "Shop left sidebar", href: "/shop/list-left-sidebar" },
-      { label: "Shop right sidebar", href: "/shop/list-right-sidebar" },
-      { label: "Banner left sidebar", href: "/shop/list-banner-left-sidebar" },
-      { label: "Banner right sidebar", href: "/shop/list-banner-right-sidebar" },
-      { label: "Full width 2 columns", href: "/shop/list-full-col-2" },
-    ],
-  },
-];
-
-const productGroups: NavGroup[] = [
-  {
-    label: "Product page",
-    links: [
-      { label: "Product left sidebar", href: "/product/left-sidebar" },
-      { label: "Product right sidebar", href: "/product/right-sidebar" },
-    ],
-  },
-  {
-    label: "Product Accordion",
-    links: [
-      { label: "Left sidebar", href: "/product/accordion-left-sidebar" },
-      { label: "Right sidebar", href: "/product/accordion-right-sidebar" },
-    ],
-  },
-];
-
-const productLinks: NavLink[] = [
-  { label: "Product full width", href: "/product/full-width" },
-  { label: "Accordion full width", href: "/product/accordion-full-width" },
-];
-
-const pageLinks: NavLink[] = [
-  { label: "About Us", href: "/about-us" },
-  { label: "Contact Us", href: "/contact-us" },
-  { label: "Cart", href: "/cart" },
-  { label: "Checkout", href: "/checkout" },
-  { label: "Compare", href: "/compare" },
-  { label: "Faq", href: "/faq" },
-  { label: "Login", href: "/login" },
-  { label: "Register", href: "/register" },
-  { label: "Wishlist", href: "/wishlist" },
-  { label: "Terms", href: "/terms" },
-  { label: "Track Order", href: "/track-order" },
-  { label: "Offer", href: "/offer" },
-];
-
-const blogLinks: NavLink[] = [
-  { label: "Left Sidebar", href: "/blog/left-sidebar" },
-  { label: "Right Sidebar", href: "/blog/right-sidebar" },
-  { label: "Full Width", href: "/blog/full-width" },
-  { label: "Detail Left Sidebar", href: "/blog/detail-left-sidebar" },
-  { label: "Detail Right Sidebar", href: "/blog/detail-right-sidebar" },
-  { label: "Detail Full Width", href: "/blog/detail-full-width" },
-];
-
-const homeLinks: NavLink[] = [
-  { label: "Grocery", href: "/" },
-  { label: "Fashion", href: "/demo-2" },
-];
 
 function AccordionItem({
   label,
@@ -129,42 +38,14 @@ function AccordionItem({
   );
 }
 
-function NestedAccordion({
-  group,
-  onNavigate,
-}: {
-  group: NavGroup;
-  onNavigate: () => void;
-}) {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <AccordionItem label={group.label} open={open} onToggle={() => setOpen(!open)}>
-      <ul className="space-y-2">
-        {group.links.map((link) => (
-          <li key={link.href}>
-            <Link
-              href={link.href}
-              onClick={onNavigate}
-              className="text-sm text-bb-muted hover:text-bb-primary block py-1"
-            >
-              {link.label}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </AccordionItem>
-  );
-}
-
 export default function MobileMenu() {
   const dispatch = useAppDispatch();
   const open = useAppSelector((state) => state.ui.mobileMenuOpen);
-  const [homeOpen, setHomeOpen] = useState(false);
-  const [shopOpen, setShopOpen] = useState(false);
-  const [productOpen, setProductOpen] = useState(false);
+  const { theme } = useTheme();
+  const homePath = resolveHomePath(theme);
+  const shopPath = resolveShopPath(theme);
+  const pageLinks = visiblePageLinks(theme);
   const [pagesOpen, setPagesOpen] = useState(false);
-  const [blogOpen, setBlogOpen] = useState(false);
 
   const close = () => dispatch(closeMobileMenu());
 
@@ -193,64 +74,46 @@ export default function MobileMenu() {
 
         <nav className="flex-1 overflow-y-auto px-4">
           <ul>
-            <AccordionItem label="Home" open={homeOpen} onToggle={() => setHomeOpen(!homeOpen)}>
-              <ul className="space-y-2">
-                {homeLinks.map((link) => (
-                  <li key={link.href}>
-                    <Link href={link.href} onClick={close} className="text-sm text-bb-muted hover:text-bb-primary block py-1">
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </AccordionItem>
+            <li className="border-b border-bb-border">
+              <Link
+                href={homePath}
+                onClick={close}
+                className="flex items-center py-3 font-medium text-bb-text hover:text-bb-primary transition-colors"
+              >
+                Home
+              </Link>
+            </li>
+            <li className="border-b border-bb-border">
+              <Link
+                href={shopPath}
+                onClick={close}
+                className="flex items-center py-3 font-medium text-bb-text hover:text-bb-primary transition-colors"
+              >
+                Shop
+              </Link>
+            </li>
 
-            <AccordionItem label="Categories" open={shopOpen} onToggle={() => setShopOpen(!shopOpen)}>
-              <ul>
-                {shopGroups.map((group) => (
-                  <NestedAccordion key={group.label} group={group} onNavigate={close} />
-                ))}
-              </ul>
-            </AccordionItem>
-
-            <AccordionItem label="Products" open={productOpen} onToggle={() => setProductOpen(!productOpen)}>
-              <ul>
-                {productGroups.map((group) => (
-                  <NestedAccordion key={group.label} group={group} onNavigate={close} />
-                ))}
-                {productLinks.map((link) => (
-                  <li key={link.href} className="py-1">
-                    <Link href={link.href} onClick={close} className="text-sm text-bb-muted hover:text-bb-primary block py-1">
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </AccordionItem>
-
-            <AccordionItem label="Pages" open={pagesOpen} onToggle={() => setPagesOpen(!pagesOpen)}>
-              <ul className="space-y-2">
-                {pageLinks.map((link) => (
-                  <li key={link.href}>
-                    <Link href={link.href} onClick={close} className="text-sm text-bb-muted hover:text-bb-primary block py-1">
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </AccordionItem>
-
-            <AccordionItem label="Blog" open={blogOpen} onToggle={() => setBlogOpen(!blogOpen)}>
-              <ul className="space-y-2">
-                {blogLinks.map((link) => (
-                  <li key={link.href}>
-                    <Link href={link.href} onClick={close} className="text-sm text-bb-muted hover:text-bb-primary block py-1">
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </AccordionItem>
+            {pageLinks.length > 0 && (
+              <AccordionItem
+                label="Pages"
+                open={pagesOpen}
+                onToggle={() => setPagesOpen(!pagesOpen)}
+              >
+                <ul className="space-y-2">
+                  {pageLinks.map((link) => (
+                    <li key={link.href}>
+                      <Link
+                        href={link.href}
+                        onClick={close}
+                        className="text-sm text-bb-muted hover:text-bb-primary block py-1"
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </AccordionItem>
+            )}
 
             <li className="border-b border-bb-border">
               <Link

@@ -20,6 +20,18 @@ const nextConfig: NextConfig = {
         port: "8001",
         pathname: "/uploads/**",
       },
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "8011",
+        pathname: "/uploads/**",
+      },
+      {
+        protocol: "http",
+        hostname: "127.0.0.1",
+        port: "8011",
+        pathname: "/uploads/**",
+      },
     ],
   },
 };
