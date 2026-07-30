@@ -48,7 +48,7 @@ class Settings(BaseSettings):
         # Sync SQLAlchemy driver: psycopg (v3). asyncpg is listed for async adoption.
         return (
             f"postgresql+psycopg://{self.postgres_user}:{self.postgres_password}"
-            f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
+            f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}?sslmode=require&channel_binding=require"
         )
 
     @property
