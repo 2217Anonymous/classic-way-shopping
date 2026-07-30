@@ -18,12 +18,12 @@ const quicksand = Quicksand({
 
 export const metadata: Metadata = {
   title: {
-    default: "Valaiyagam Fashion - T-Shirt Store",
-    template: "%s | Valaiyagam Fashion",
+    default: "Classic Way - Fashion Store",
+    template: "%s | Classic Way",
   },
   description:
-    "Valaiyagam Fashion — premium T-shirts and apparel. Shop new arrivals, deals, and everyday essentials.",
-  keywords: ["Valaiyagam", "fashion", "t-shirt", "apparel", "online store"],
+    "Classic Way — quality T-shirts, apparel, and everyday fashion. Shop new arrivals, deals, and essentials.",
+  keywords: ["Classic Way", "fashion", "t-shirt", "apparel", "online store"],
 };
 
 export default function RootLayout({

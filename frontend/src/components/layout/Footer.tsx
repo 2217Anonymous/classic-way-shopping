@@ -2,8 +2,11 @@
 
 import Link from "next/link";
 import Container from "@/components/ui/Container";
+import BrandLogo from "@/components/layout/BrandLogo";
 import { useTheme } from "@/hooks/useTheme";
 import { resolveHomePath, resolveShopPath } from "@/lib/themeResolver";
+import { useAppSelector } from "@/store/hooks";
+import { selectIsAuthenticated } from "@/store/slices/authSlice";
 
 const brandDirectory = [
   {
@@ -33,13 +36,6 @@ const companyLinks = [
   { label: "Contact us", href: "/contact-us" },
 ];
 
-const accountLinks = [
-  { label: "Sign In", href: "/login" },
-  { label: "View Cart", href: "/cart" },
-  { label: "Return Policy", href: "/faq" },
-  { label: "Payments", href: "/checkout" },
-];
-
 const categoryLabels = [
   "Dairy & Milk",
   "Snack & Spice",
@@ -61,6 +57,20 @@ export default function Footer() {
   const { theme } = useTheme();
   const homePath = resolveHomePath(theme);
   const shopPath = resolveShopPath(theme);
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const accountLinks = isAuthenticated
+    ? [
+        { label: "My Orders", href: "/orders" },
+        { label: "My Profile", href: "/profile" },
+        { label: "View Cart", href: "/cart" },
+        { label: "Return Policy", href: "/faq" },
+      ]
+    : [
+        { label: "Sign In", href: "/login" },
+        { label: "View Cart", href: "/cart" },
+        { label: "Return Policy", href: "/faq" },
+        { label: "Payments", href: "/checkout" },
+      ];
 
   return (
     <footer className="mt-12 border-t border-bb-border bg-bb-soft">
@@ -94,12 +104,12 @@ export default function Footer() {
         <Container>
           <div className="grid sm:grid-cols-2 lg:grid-cols-12 gap-8">
             <div className="lg:col-span-3">
-              <Link href={homePath} className="inline-flex items-center gap-2 text-xl font-bold text-bb-primary">
-                <i className="ri-shopping-basket-2-fill text-2xl" />
-                BlueBerry
+              <Link href={homePath} aria-label="Classic Way home">
+                <BrandLogo compact />
               </Link>
               <p className="text-sm text-bb-muted mt-4 leading-relaxed">
-                BlueBerry is the biggest market of grocery products. Get your daily needs from our store.
+                Classic Way brings you quality fashion and everyday essentials with a
+                simple, reliable shopping experience.
               </p>
               <div className="flex gap-3 mt-5">
                 <span className="inline-flex items-center gap-2 px-3 py-2 bg-white border border-bb-border rounded-md text-xs text-bb-muted">
@@ -203,7 +213,7 @@ export default function Footer() {
             <p>
               Copyright © {year}{" "}
               <Link href={homePath} className="text-bb-primary font-medium hover:underline">
-                BlueBerry
+                Classic Way
               </Link>{" "}
               all rights reserved.
             </p>

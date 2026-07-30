@@ -18,7 +18,7 @@ export default function TestimonialsSection() {
         <SectionTitle
           title="What Our"
           highlight="Customers Say"
-          subtitle="Real reviews from happy BlueBerry shoppers"
+          subtitle="Real reviews from happy Classic Way shoppers"
         />
         <Swiper
           modules={[Pagination, Autoplay]}

@@ -39,6 +39,16 @@ class ProductRepository:
         )
         return self.db.scalars(statement).unique().first()
 
+    def get_many(self, product_ids: set[UUID]) -> list[Product]:
+        if not product_ids:
+            return []
+        statement = (
+            select(Product)
+            .where(Product.id.in_(product_ids))
+            .options(*self._options())
+        )
+        return list(self.db.scalars(statement).unique().all())
+
     def get_by_slug(self, slug: str) -> Product | None:
         statement = (
             select(Product)

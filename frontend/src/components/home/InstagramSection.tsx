@@ -47,7 +47,7 @@ export default function InstagramSection() {
     <section className="py-10 md:py-12 bg-bb-soft/40">
       <Container>
         <SectionTitle
-          title="#BlueBerry"
+          title="#ClassicWay"
           highlight="Instagram"
           subtitle="Follow us for daily fresh food inspiration"
           right={
@@ -58,7 +58,7 @@ export default function InstagramSection() {
               className="text-sm font-medium text-bb-primary hover:underline"
             >
               <i className="ri-instagram-line mr-1" />
-              @blueberry
+              @classicway
             </a>
           }
         />

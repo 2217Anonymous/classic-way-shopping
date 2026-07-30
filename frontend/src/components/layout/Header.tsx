@@ -2,11 +2,18 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Container from "@/components/ui/Container";
+import BrandLogo from "@/components/layout/BrandLogo";
 import { listCategories } from "@/services/categories";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { selectCartCount } from "@/store/slices/cartSlice";
 import { selectWishlistCount } from "@/store/slices/wishlistSlice";
+import {
+  logout,
+  selectAuthCustomer,
+  selectIsAuthenticated,
+} from "@/store/slices/authSlice";
 import {
   openCart,
   toggleCategory,
@@ -18,8 +25,11 @@ import type { Category } from "@/types";
 
 export default function Header() {
   const dispatch = useAppDispatch();
+  const router = useRouter();
   const cartCount = useAppSelector(selectCartCount);
   const wishlistCount = useAppSelector(selectWishlistCount);
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const customer = useAppSelector(selectAuthCustomer);
   const { theme } = useTheme();
   const homePath = resolveHomePath(theme);
   const shopPath = resolveShopPath(theme);
@@ -30,6 +40,7 @@ export default function Header() {
   const [accountOpen, setAccountOpen] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const displayName = customer?.full_name?.trim() || customer?.email || "Account";
 
   useEffect(() => {
     let cancelled = false;
@@ -51,6 +62,12 @@ export default function Header() {
   const handleSearch = (e: FormEvent) => {
     e.preventDefault();
     dispatch(setSearchQuery(search));
+  };
+
+  const handleLogout = async () => {
+    setAccountOpen(false);
+    await dispatch(logout());
+    router.push("/");
   };
 
   return (
@@ -142,14 +159,8 @@ export default function Header() {
         <Container>
           <div className="flex items-center gap-4 py-4 lg:py-5">
             <div className="flex items-center gap-3 shrink-0">
-              <Link href={homePath} className="inline-flex items-center gap-2">
-                <span className="flex items-center justify-center w-10 h-10 rounded-full bg-bb-primary/15 text-bb-primary">
-                  <i className="ri-shopping-basket-2-fill text-2xl" />
-                </span>
-                <span className="hidden sm:inline text-[22px] font-bold leading-none tracking-tight">
-                  <span className="text-bb-primary">Blue</span>
-                  <span className="text-bb-text">Berry</span>
-                </span>
+              <Link href={homePath} aria-label="Classic Way home">
+                <BrandLogo className="[&>span:last-child]:hidden sm:[&>span:last-child]:flex" />
               </Link>
               <button
                 type="button"
@@ -217,28 +228,91 @@ export default function Header() {
                   <span className="w-8 h-8 flex items-center justify-center text-bb-primary">
                     <i className="ri-user-3-line text-[26px]" />
                   </span>
-                  <span className="hidden lg:flex flex-col text-left text-xs leading-tight">
-                    <span className="font-medium text-bb-text text-[13px]">Account</span>
-                    <span className="text-bb-muted">Login</span>
+                  <span className="hidden lg:flex flex-col text-left text-xs leading-tight max-w-[140px]">
+                    <span className="font-medium text-bb-text text-[13px] truncate">
+                      {isAuthenticated ? displayName : "Account"}
+                    </span>
+                    <span className="text-bb-muted">
+                      {isAuthenticated ? "My account" : "Login"}
+                    </span>
                   </span>
                 </button>
                 {accountOpen && (
-                  <ul className="absolute top-full right-0 mt-1 min-w-[160px] bg-white border border-bb-border rounded-md shadow-lg py-1 z-50">
-                    <li>
-                      <Link href="/register" className="block px-4 py-2 text-sm hover:bg-bb-soft hover:text-bb-primary" onClick={() => setAccountOpen(false)}>
-                        Register
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="/checkout" className="block px-4 py-2 text-sm hover:bg-bb-soft hover:text-bb-primary" onClick={() => setAccountOpen(false)}>
-                        Checkout
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="/login" className="block px-4 py-2 text-sm hover:bg-bb-soft hover:text-bb-primary" onClick={() => setAccountOpen(false)}>
-                        Login
-                      </Link>
-                    </li>
+                  <ul className="absolute top-full right-0 mt-1 min-w-[180px] bg-white border border-bb-border rounded-md shadow-lg py-1 z-50">
+                    {isAuthenticated ? (
+                      <>
+                        <li className="px-4 py-2 border-b border-bb-border">
+                          <p className="text-sm font-medium text-bb-text truncate">{displayName}</p>
+                          <p className="text-xs text-bb-muted truncate">{customer?.email}</p>
+                        </li>
+                        <li>
+                          <Link
+                            href="/orders"
+                            className="block px-4 py-2 text-sm hover:bg-bb-soft hover:text-bb-primary"
+                            onClick={() => setAccountOpen(false)}
+                          >
+                            My Orders
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            href="/profile"
+                            className="block px-4 py-2 text-sm hover:bg-bb-soft hover:text-bb-primary"
+                            onClick={() => setAccountOpen(false)}
+                          >
+                            My Profile
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            href="/checkout"
+                            className="block px-4 py-2 text-sm hover:bg-bb-soft hover:text-bb-primary"
+                            onClick={() => setAccountOpen(false)}
+                          >
+                            Checkout
+                          </Link>
+                        </li>
+                        <li>
+                          <button
+                            type="button"
+                            className="block w-full text-left px-4 py-2 text-sm hover:bg-bb-soft hover:text-bb-primary"
+                            onClick={() => void handleLogout()}
+                          >
+                            Logout
+                          </button>
+                        </li>
+                      </>
+                    ) : (
+                      <>
+                        <li>
+                          <Link
+                            href="/login"
+                            className="block px-4 py-2 text-sm hover:bg-bb-soft hover:text-bb-primary"
+                            onClick={() => setAccountOpen(false)}
+                          >
+                            Login
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            href="/register"
+                            className="block px-4 py-2 text-sm hover:bg-bb-soft hover:text-bb-primary"
+                            onClick={() => setAccountOpen(false)}
+                          >
+                            Register
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            href="/checkout"
+                            className="block px-4 py-2 text-sm hover:bg-bb-soft hover:text-bb-primary"
+                            onClick={() => setAccountOpen(false)}
+                          >
+                            Checkout
+                          </Link>
+                        </li>
+                      </>
+                    )}
                   </ul>
                 )}
               </div>

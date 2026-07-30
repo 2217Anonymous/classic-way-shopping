@@ -192,6 +192,9 @@ export type ApiOrder = {
   currency: string;
   items: Array<{
     id: string;
+    product_id: string | null;
+    product_slug: string | null;
+    product_image: string | null;
     name: string;
     quantity: number;
     unit_price: number | string;

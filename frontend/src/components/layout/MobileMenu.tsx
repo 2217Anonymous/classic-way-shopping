@@ -2,8 +2,14 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { closeMobileMenu } from "@/store/slices/uiSlice";
+import {
+  logout,
+  selectAuthCustomer,
+  selectIsAuthenticated,
+} from "@/store/slices/authSlice";
 import { useTheme } from "@/hooks/useTheme";
 import {
   resolveHomePath,
@@ -40,7 +46,10 @@ function AccordionItem({
 
 export default function MobileMenu() {
   const dispatch = useAppDispatch();
+  const router = useRouter();
   const open = useAppSelector((state) => state.ui.mobileMenuOpen);
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const customer = useAppSelector(selectAuthCustomer);
   const { theme } = useTheme();
   const homePath = resolveHomePath(theme);
   const shopPath = resolveShopPath(theme);
@@ -48,6 +57,12 @@ export default function MobileMenu() {
   const [pagesOpen, setPagesOpen] = useState(false);
 
   const close = () => dispatch(closeMobileMenu());
+
+  const handleLogout = async () => {
+    close();
+    await dispatch(logout());
+    router.push("/");
+  };
 
   if (!open) return null;
 
@@ -73,6 +88,14 @@ export default function MobileMenu() {
         </div>
 
         <nav className="flex-1 overflow-y-auto px-4">
+          {isAuthenticated && (
+            <div className="py-4 border-b border-bb-border">
+              <p className="font-medium text-bb-text truncate">
+                {customer?.full_name || customer?.email}
+              </p>
+              <p className="text-sm text-bb-muted truncate">{customer?.email}</p>
+            </div>
+          )}
           <ul>
             <li className="border-b border-bb-border">
               <Link
@@ -92,6 +115,59 @@ export default function MobileMenu() {
                 Shop
               </Link>
             </li>
+
+            {isAuthenticated ? (
+              <>
+                <li className="border-b border-bb-border">
+                  <Link
+                    href="/orders"
+                    onClick={close}
+                    className="flex items-center py-3 font-medium text-bb-text hover:text-bb-primary transition-colors"
+                  >
+                    My Orders
+                  </Link>
+                </li>
+                <li className="border-b border-bb-border">
+                  <Link
+                    href="/profile"
+                    onClick={close}
+                    className="flex items-center py-3 font-medium text-bb-text hover:text-bb-primary transition-colors"
+                  >
+                    My Profile
+                  </Link>
+                </li>
+                <li className="border-b border-bb-border">
+                  <button
+                    type="button"
+                    onClick={() => void handleLogout()}
+                    className="flex items-center w-full py-3 font-medium text-bb-text hover:text-bb-primary transition-colors"
+                  >
+                    Logout
+                  </button>
+                </li>
+              </>
+            ) : (
+              <>
+                <li className="border-b border-bb-border">
+                  <Link
+                    href="/login"
+                    onClick={close}
+                    className="flex items-center py-3 font-medium text-bb-text hover:text-bb-primary transition-colors"
+                  >
+                    Login
+                  </Link>
+                </li>
+                <li className="border-b border-bb-border">
+                  <Link
+                    href="/register"
+                    onClick={close}
+                    className="flex items-center py-3 font-medium text-bb-text hover:text-bb-primary transition-colors"
+                  >
+                    Register
+                  </Link>
+                </li>
+              </>
+            )}
 
             {pageLinks.length > 0 && (
               <AccordionItem
@@ -130,15 +206,17 @@ export default function MobileMenu() {
 
         <div className="px-4 py-4 border-t border-bb-border">
           <div className="flex gap-3 justify-center">
-            {["ri-facebook-fill", "ri-twitter-fill", "ri-instagram-line", "ri-linkedin-fill"].map((icon) => (
-              <a
-                key={icon}
-                href="#"
-                className="w-9 h-9 rounded-full border border-bb-border flex items-center justify-center text-bb-muted hover:bg-bb-primary hover:text-white hover:border-bb-primary transition-colors"
-              >
-                <i className={icon} />
-              </a>
-            ))}
+            {["ri-facebook-fill", "ri-twitter-fill", "ri-instagram-line", "ri-linkedin-fill"].map(
+              (icon) => (
+                <a
+                  key={icon}
+                  href="#"
+                  className="w-9 h-9 rounded-full border border-bb-border flex items-center justify-center text-bb-muted hover:bg-bb-primary hover:text-white hover:border-bb-primary transition-colors"
+                >
+                  <i className={icon} />
+                </a>
+              )
+            )}
           </div>
         </div>
       </aside>

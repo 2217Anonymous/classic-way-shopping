@@ -72,7 +72,7 @@ export default function ProductTabs() {
         <SectionTitle
           title="New"
           highlight="Arrivals"
-          subtitle="Fresh picks from Valaiyagam Fashion"
+          subtitle="Fresh picks from Classic Way"
           right={
             <ul className="flex flex-wrap gap-2">
               {tabs.map((tab) => (

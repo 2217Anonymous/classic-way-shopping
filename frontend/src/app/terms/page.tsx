@@ -10,7 +10,7 @@ export default function TermsPage() {
           <section>
             <h3 className="text-lg font-semibold text-bb-text mb-2">1. Introduction</h3>
             <p>
-              By accessing and using the BlueBerry website, you accept and agree to be bound by these Terms and
+              By accessing and using the Classic Way website, you accept and agree to be bound by these Terms and
               Conditions. Please read them carefully before placing an order.
             </p>
           </section>

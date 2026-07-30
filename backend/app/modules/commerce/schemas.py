@@ -57,6 +57,9 @@ class CheckoutPreviewResponse(BaseModel):
 
 class CustomerOrderItemResponse(BaseModel):
     id: UUID
+    product_id: UUID | None = None
+    product_slug: str | None = None
+    product_image: str | None = None
     name: str
     quantity: int
     unit_price: Decimal
