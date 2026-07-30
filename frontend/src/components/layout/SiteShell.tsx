@@ -35,16 +35,20 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
   return (
     <>
       <ThemeBootstrap />
-      <Header />
+      <div className="no-print">
+        <Header />
+      </div>
       <main className="flex-1">{children}</main>
-      <Footer />
-      <CartSidebar />
-      <CategoryPopup />
-      <QuickViewModal />
-      <NewsletterModal />
-      <BackToTop />
-      <ThemeSettingsFab />
-      <ThemeSettingsDrawer />
+      <div className="no-print">
+        <Footer />
+        <CartSidebar />
+        <CategoryPopup />
+        <QuickViewModal />
+        <NewsletterModal />
+        <BackToTop />
+        <ThemeSettingsFab />
+        <ThemeSettingsDrawer />
+      </div>
     </>
   );
 }

@@ -179,6 +179,14 @@ export type ApiCheckoutCreate = {
   notes?: string | null;
 };
 
+export type ApiOrderStatusHistory = {
+  from_status?: string | null;
+  to_status?: string | null;
+  note?: string | null;
+  created_at?: string | null;
+  status?: string | null;
+};
+
 export type ApiOrder = {
   id: string;
   order_number: string;
@@ -190,6 +198,16 @@ export type ApiOrder = {
   discount_amount: number | string;
   total: number | string;
   currency: string;
+  shipping_name?: string | null;
+  shipping_phone?: string | null;
+  shipping_line1?: string | null;
+  shipping_line2?: string | null;
+  shipping_city?: string | null;
+  shipping_state?: string | null;
+  shipping_postal_code?: string | null;
+  shipping_country?: string | null;
+  coupon_code?: string | null;
+  notes?: string | null;
   items: Array<{
     id: string;
     product_id: string | null;
@@ -200,7 +218,9 @@ export type ApiOrder = {
     unit_price: number | string;
     line_total: number | string;
   }>;
+  status_history?: ApiOrderStatusHistory[];
   created_at: string;
+  updated_at: string;
 };
 
 export type ApiShipmentEvent = {

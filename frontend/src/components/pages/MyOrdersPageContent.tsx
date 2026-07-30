@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -15,6 +15,17 @@ import { ApiError, mediaUrl } from "@/lib/api";
 
 const CANCELLABLE = new Set(["draft", "pending", "paid"]);
 
+const STATUS_TABS = [
+  { key: "all", label: "All" },
+  { key: "pending", label: "Pending" },
+  { key: "paid", label: "Paid" },
+  { key: "processing", label: "Processing" },
+  { key: "shipped", label: "Shipped" },
+  { key: "delivered", label: "Delivered" },
+  { key: "cancelled", label: "Cancelled" },
+  { key: "refunded", label: "Refunded" },
+] as const;
+
 function statusClass(status: string) {
   const value = status.toLowerCase();
   if (value === "cancelled") return "bg-red-50 text-red-700 border-red-200";
@@ -24,11 +35,24 @@ function statusClass(status: string) {
   if (value === "shipped" || value === "processing") {
     return "bg-blue-50 text-blue-700 border-blue-200";
   }
+  if (value === "refunded" || value === "returned") {
+    return "bg-orange-50 text-orange-700 border-orange-200";
+  }
   return "bg-amber-50 text-amber-800 border-amber-200";
+}
+
+function statusLabel(status: string) {
+  return status.replace(/_/g, " ");
 }
 
 function money(value: number | string) {
   return formatPrice(Number(value));
+}
+
+function paymentLabel(method: string) {
+  if (method.toLowerCase() === "cod") return "COD";
+  if (method.toLowerCase() === "razorpay") return "Razorpay";
+  return method;
 }
 
 export default function MyOrdersPageContent() {
@@ -36,6 +60,7 @@ export default function MyOrdersPageContent() {
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const authStatus = useAppSelector((state) => state.auth.status);
   const [orders, setOrders] = useState<ApiOrder[]>([]);
+  const [statusTab, setStatusTab] = useState<(typeof STATUS_TABS)[number]["key"]>("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
@@ -61,8 +86,39 @@ export default function MyOrdersPageContent() {
       router.replace("/login");
       return;
     }
-    void loadOrders();
-  }, [authStatus, isAuthenticated, loadOrders, router]);
+    let active = true;
+    (async () => {
+      try {
+        const data = await listOrders();
+        if (!active) return;
+        setOrders(data);
+        setError(null);
+      } catch (err) {
+        if (!active) return;
+        setError(err instanceof Error ? err.message : "Unable to load orders");
+        setOrders([]);
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [authStatus, isAuthenticated, router]);
+
+  const statusCounts = useMemo(() => {
+    const counts: Record<string, number> = { all: orders.length };
+    for (const order of orders) {
+      const key = order.status.toLowerCase();
+      counts[key] = (counts[key] ?? 0) + 1;
+    }
+    return counts;
+  }, [orders]);
+
+  const filteredOrders = useMemo(() => {
+    if (statusTab === "all") return orders;
+    return orders.filter((order) => order.status.toLowerCase() === statusTab);
+  }, [orders, statusTab]);
 
   const onCancel = async (order: ApiOrder) => {
     const reason = window.prompt(
@@ -107,12 +163,36 @@ export default function MyOrdersPageContent() {
           <div>
             <h1 className="text-2xl font-semibold text-bb-text">My Orders</h1>
             <p className="text-sm text-bb-muted mt-1">
-              View order history and cancel eligible orders.
+              View order history, track progress, and cancel eligible orders.
             </p>
           </div>
           <Link href="/track-order" className="text-sm text-bb-primary hover:underline">
             Track an order
           </Link>
+        </div>
+
+        <div className="mb-5 flex gap-2 overflow-x-auto pb-1">
+          {STATUS_TABS.map((tab) => {
+            const count = statusCounts[tab.key] ?? 0;
+            const active = statusTab === tab.key;
+            return (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => setStatusTab(tab.key)}
+                className={`shrink-0 rounded-full border px-3.5 py-1.5 text-sm transition-colors ${
+                  active
+                    ? "border-bb-primary bg-bb-primary text-white"
+                    : "border-bb-border bg-white text-bb-muted hover:border-bb-primary hover:text-bb-primary"
+                }`}
+              >
+                {tab.label}
+                <span className={`ml-1.5 text-xs ${active ? "text-white/80" : "text-bb-muted"}`}>
+                  ({count})
+                </span>
+              </button>
+            );
+          })}
         </div>
 
         {actionError && (
@@ -139,127 +219,245 @@ export default function MyOrdersPageContent() {
               Continue shopping
             </Link>
           </div>
-        ) : (
-          <div className="overflow-hidden rounded-xl border border-bb-border bg-white shadow-sm">
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[980px] border-collapse text-left">
-                <thead className="bg-bb-soft">
-                  <tr className="border-b border-bb-border text-xs uppercase tracking-wide text-bb-muted">
-                    <th className="px-5 py-4 font-semibold">Order</th>
-                    <th className="px-5 py-4 font-semibold">Products</th>
-                    <th className="px-5 py-4 font-semibold">Date</th>
-                    <th className="px-5 py-4 font-semibold">Status</th>
-                    <th className="px-5 py-4 font-semibold">Payment</th>
-                    <th className="px-5 py-4 font-semibold text-right">Total</th>
-                    <th className="px-5 py-4 font-semibold text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-bb-border">
-                  {orders.map((order) => {
-                    const canCancel = CANCELLABLE.has(order.status.toLowerCase());
-                    return (
-                      <tr key={order.id} className="align-top transition-colors hover:bg-bb-soft/40">
-                        <td className="px-5 py-5">
-                          <p className="font-semibold text-bb-text whitespace-nowrap">
-                            #{order.order_number}
-                          </p>
-                          <p className="mt-1 text-xs text-bb-muted">
-                            {order.items.length} {order.items.length === 1 ? "item" : "items"}
-                          </p>
-                        </td>
-                        <td className="px-5 py-5">
-                          <div className="space-y-3">
-                            {order.items.map((item) => {
-                              const productContent = (
-                                <>
-                                  <span className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-bb-border bg-bb-soft">
-                                    <Image
-                                      src={mediaUrl(item.product_image)}
-                                      alt={item.name}
-                                      fill
-                                      sizes="56px"
-                                      className="object-cover"
-                                    />
-                                  </span>
-                                  <span className="min-w-0">
-                                    <span className="block max-w-[260px] truncate text-sm font-medium text-bb-text">
-                                      {item.name}
-                                    </span>
-                                    <span className="mt-1 block text-xs text-bb-muted">
-                                      Qty: {item.quantity} · {money(item.unit_price)} each
-                                    </span>
-                                  </span>
-                                </>
-                              );
-                              return item.product_slug ? (
-                                <Link
-                                  key={item.id}
-                                  href={`/product/${item.product_slug}`}
-                                  className="flex items-center gap-3 hover:text-bb-primary"
-                                >
-                                  {productContent}
-                                </Link>
-                              ) : (
-                                <div key={item.id} className="flex items-center gap-3">
-                                  {productContent}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </td>
-                        <td className="px-5 py-5 text-sm text-bb-muted whitespace-nowrap">
-                          <p>{new Date(order.created_at).toLocaleDateString()}</p>
-                          <p className="mt-1 text-xs">
-                            {new Date(order.created_at).toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                          </p>
-                        </td>
-                        <td className="px-5 py-5">
-                          <span
-                            className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium capitalize ${statusClass(order.status)}`}
-                          >
-                            {order.status.replace(/_/g, " ")}
-                          </span>
-                        </td>
-                        <td className="px-5 py-5 text-sm capitalize text-bb-text">
-                          {order.payment_method}
-                        </td>
-                        <td className="px-5 py-5 text-right font-semibold text-bb-text whitespace-nowrap">
-                          {money(order.total)}
-                        </td>
-                        <td className="px-5 py-5">
-                          <div className="flex flex-col items-end gap-2">
-                            <Link
-                              href={`/track-order?order=${encodeURIComponent(order.order_number)}`}
-                              className="inline-flex min-w-[110px] items-center justify-center rounded-md border border-bb-border px-3 py-2 text-sm transition-colors hover:border-bb-primary hover:text-bb-primary"
-                            >
-                              <i className="ri-truck-line mr-1.5" />
-                              Track
-                            </Link>
-                            {canCancel && (
-                              <button
-                                type="button"
-                                className="inline-flex min-w-[110px] items-center justify-center rounded-md border border-red-200 px-3 py-2 text-sm text-red-700 transition-colors hover:bg-red-50 disabled:opacity-60"
-                                disabled={cancellingId === order.id}
-                                onClick={() => void onCancel(order)}
-                              >
-                                {cancellingId === order.id ? "Cancelling..." : "Cancel"}
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-            <div className="border-t border-bb-border bg-bb-soft px-5 py-3 text-xs text-bb-muted">
-              Showing {orders.length} {orders.length === 1 ? "order" : "orders"}
-            </div>
+        ) : filteredOrders.length === 0 ? (
+          <div className="text-center py-16 border border-bb-border rounded-xl bg-white">
+            <p className="text-bb-text font-medium mb-1">No {statusTab} orders</p>
+            <p className="text-sm text-bb-muted mb-4">Try another status filter.</p>
+            <button
+              type="button"
+              className="text-sm text-bb-primary hover:underline"
+              onClick={() => setStatusTab("all")}
+            >
+              Show all orders
+            </button>
           </div>
+        ) : (
+          <>
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-hidden rounded-xl border border-bb-border bg-white shadow-sm">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[980px] border-collapse text-left">
+                  <thead className="bg-bb-soft">
+                    <tr className="border-b border-bb-border text-xs uppercase tracking-wide text-bb-muted">
+                      <th className="px-5 py-4 font-semibold">Order</th>
+                      <th className="px-5 py-4 font-semibold">Products</th>
+                      <th className="px-5 py-4 font-semibold">Date</th>
+                      <th className="px-5 py-4 font-semibold">Status</th>
+                      <th className="px-5 py-4 font-semibold">Payment</th>
+                      <th className="px-5 py-4 font-semibold text-right">Total</th>
+                      <th className="px-5 py-4 font-semibold text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-bb-border">
+                    {filteredOrders.map((order) => {
+                      const canCancel = CANCELLABLE.has(order.status.toLowerCase());
+                      return (
+                        <tr key={order.id} className="align-top transition-colors hover:bg-bb-soft/40">
+                          <td className="px-5 py-5">
+                            <Link
+                              href={`/orders/${order.id}`}
+                              className="font-semibold text-bb-text whitespace-nowrap hover:text-bb-primary"
+                            >
+                              #{order.order_number}
+                            </Link>
+                            <p className="mt-1 text-xs text-bb-muted">
+                              {order.items.length} {order.items.length === 1 ? "item" : "items"}
+                            </p>
+                          </td>
+                          <td className="px-5 py-5">
+                            <div className="space-y-3">
+                              {order.items.slice(0, 3).map((item) => {
+                                const productContent = (
+                                  <>
+                                    <span className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-bb-border bg-bb-soft">
+                                      <Image
+                                        src={mediaUrl(item.product_image)}
+                                        alt={item.name}
+                                        fill
+                                        sizes="56px"
+                                        className="object-cover"
+                                      />
+                                    </span>
+                                    <span className="min-w-0">
+                                      <span className="block max-w-[260px] truncate text-sm font-medium text-bb-text">
+                                        {item.name}
+                                      </span>
+                                      <span className="mt-1 block text-xs text-bb-muted">
+                                        Qty: {item.quantity} · {money(item.unit_price)} each
+                                      </span>
+                                    </span>
+                                  </>
+                                );
+                                return item.product_slug ? (
+                                  <Link
+                                    key={item.id}
+                                    href={`/product/${item.product_slug}`}
+                                    className="flex items-center gap-3 hover:text-bb-primary"
+                                  >
+                                    {productContent}
+                                  </Link>
+                                ) : (
+                                  <div key={item.id} className="flex items-center gap-3">
+                                    {productContent}
+                                  </div>
+                                );
+                              })}
+                              {order.items.length > 3 && (
+                                <p className="text-xs text-bb-muted">
+                                  +{order.items.length - 3} more item
+                                  {order.items.length - 3 === 1 ? "" : "s"}
+                                </p>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-5 py-5 text-sm text-bb-muted whitespace-nowrap">
+                            <p>{new Date(order.created_at).toLocaleDateString()}</p>
+                            <p className="mt-1 text-xs">
+                              {new Date(order.created_at).toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </p>
+                          </td>
+                          <td className="px-5 py-5">
+                            <span
+                              className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium capitalize ${statusClass(order.status)}`}
+                            >
+                              {statusLabel(order.status)}
+                            </span>
+                          </td>
+                          <td className="px-5 py-5 text-sm text-bb-text">
+                            {paymentLabel(order.payment_method)}
+                          </td>
+                          <td className="px-5 py-5 text-right font-semibold text-bb-text whitespace-nowrap">
+                            {money(order.total)}
+                          </td>
+                          <td className="px-5 py-5">
+                            <div className="flex flex-col items-end gap-2">
+                              <Link
+                                href={`/orders/${order.id}`}
+                                className="inline-flex min-w-[110px] items-center justify-center rounded-md border border-bb-border px-3 py-2 text-sm transition-colors hover:border-bb-primary hover:text-bb-primary"
+                              >
+                                <i className="ri-eye-line mr-1.5" />
+                                View
+                              </Link>
+                              <Link
+                                href={`/track-order?order=${encodeURIComponent(order.order_number)}`}
+                                className="inline-flex min-w-[110px] items-center justify-center rounded-md border border-bb-border px-3 py-2 text-sm transition-colors hover:border-bb-primary hover:text-bb-primary"
+                              >
+                                <i className="ri-truck-line mr-1.5" />
+                                Track
+                              </Link>
+                              {canCancel && (
+                                <button
+                                  type="button"
+                                  className="inline-flex min-w-[110px] items-center justify-center rounded-md border border-red-200 px-3 py-2 text-sm text-red-700 transition-colors hover:bg-red-50 disabled:opacity-60"
+                                  disabled={cancellingId === order.id}
+                                  onClick={() => void onCancel(order)}
+                                >
+                                  {cancellingId === order.id ? "Cancelling..." : "Cancel"}
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              <div className="border-t border-bb-border bg-bb-soft px-5 py-3 text-xs text-bb-muted">
+                Showing {filteredOrders.length} of {orders.length}{" "}
+                {orders.length === 1 ? "order" : "orders"}
+              </div>
+            </div>
+
+            {/* Mobile cards */}
+            <div className="space-y-4 md:hidden">
+              {filteredOrders.map((order) => {
+                const canCancel = CANCELLABLE.has(order.status.toLowerCase());
+                return (
+                  <article
+                    key={order.id}
+                    className="rounded-xl border border-bb-border bg-white p-4 shadow-sm"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <Link
+                          href={`/orders/${order.id}`}
+                          className="font-semibold text-bb-text hover:text-bb-primary"
+                        >
+                          #{order.order_number}
+                        </Link>
+                        <p className="mt-1 text-xs text-bb-muted">
+                          {new Date(order.created_at).toLocaleString()}
+                        </p>
+                      </div>
+                      <span
+                        className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium capitalize ${statusClass(order.status)}`}
+                      >
+                        {statusLabel(order.status)}
+                      </span>
+                    </div>
+
+                    <div className="mt-4 flex gap-2 overflow-x-auto">
+                      {order.items.map((item) => (
+                        <div
+                          key={item.id}
+                          className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-bb-border bg-bb-soft"
+                        >
+                          <Image
+                            src={mediaUrl(item.product_image)}
+                            alt={item.name}
+                            fill
+                            sizes="56px"
+                            className="object-cover"
+                          />
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="mt-4 flex items-center justify-between text-sm">
+                      <span className="text-bb-muted">
+                        {order.items.length} {order.items.length === 1 ? "item" : "items"} ·{" "}
+                        {paymentLabel(order.payment_method)}
+                      </span>
+                      <span className="font-semibold text-bb-text">{money(order.total)}</span>
+                    </div>
+
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <Link
+                        href={`/orders/${order.id}`}
+                        className="inline-flex flex-1 items-center justify-center rounded-md border border-bb-border px-3 py-2 text-sm hover:border-bb-primary hover:text-bb-primary"
+                      >
+                        View
+                      </Link>
+                      <Link
+                        href={`/track-order?order=${encodeURIComponent(order.order_number)}`}
+                        className="inline-flex flex-1 items-center justify-center rounded-md border border-bb-border px-3 py-2 text-sm hover:border-bb-primary hover:text-bb-primary"
+                      >
+                        Track
+                      </Link>
+                      {canCancel && (
+                        <button
+                          type="button"
+                          className="inline-flex w-full items-center justify-center rounded-md border border-red-200 px-3 py-2 text-sm text-red-700 hover:bg-red-50 disabled:opacity-60"
+                          disabled={cancellingId === order.id}
+                          onClick={() => void onCancel(order)}
+                        >
+                          {cancellingId === order.id ? "Cancelling..." : "Cancel"}
+                        </button>
+                      )}
+                    </div>
+                  </article>
+                );
+              })}
+              <p className="text-center text-xs text-bb-muted">
+                Showing {filteredOrders.length} of {orders.length}{" "}
+                {orders.length === 1 ? "order" : "orders"}
+              </p>
+            </div>
+          </>
         )}
       </Container>
     </>

@@ -393,6 +393,16 @@ class CommerceService:
                     line_total=item.line_total,
                 )
             )
+        history = [
+            StatusHistoryBrief(
+                from_status=h.from_status,
+                to_status=h.to_status,
+                note=h.note,
+                created_at=h.created_at,
+                status=h.to_status,
+            )
+            for h in (order.status_history or [])
+        ]
         return CustomerOrderResponse(
             id=order.id,
             order_number=order.order_number,
@@ -404,6 +414,18 @@ class CommerceService:
             discount_amount=order.discount_amount,
             total=order.total,
             currency=order.currency,
+            shipping_name=order.shipping_name,
+            shipping_phone=order.shipping_phone,
+            shipping_line1=order.shipping_line1,
+            shipping_line2=order.shipping_line2,
+            shipping_city=order.shipping_city,
+            shipping_state=order.shipping_state,
+            shipping_postal_code=order.shipping_postal_code,
+            shipping_country=order.shipping_country,
+            coupon_code=order.coupon_code,
+            notes=order.notes,
             items=response_items,
+            status_history=history,
             created_at=order.created_at,
+            updated_at=order.updated_at,
         )
