@@ -8,7 +8,7 @@ export default function AboutUsPage() {
       <Container className="pb-16">
         <div className="max-w-3xl mx-auto space-y-6 text-bb-muted leading-relaxed">
           <p>
-            Welcome to <strong className="text-bb-text">BlueBerry</strong>, your trusted online grocery destination.
+            Welcome to <strong className="text-bb-text">Classic Way</strong>, your trusted online fashion destination.
             We bring fresh, organic, and quality products directly from farms and trusted vendors to your doorstep.
           </p>
           <p>

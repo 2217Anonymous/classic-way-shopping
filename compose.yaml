@@ -1,0 +1,62 @@
+name: classic-way-shopping
+
+services:
+  postgres:
+    container_name: classic-way-db
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-classic_way}
+      POSTGRES_USER: ${POSTGRES_USER:-classic_way}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-classic_way}
+    ports:
+      - "${POSTGRES_PORT:-5434}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    container_name: classic-way-shopping
+    image: classic-way-shopping:latest
+    build:
+      context: ./backend
+    restart: unless-stopped
+    environment:
+      APP_ENV: ${APP_ENV:-development}
+      SECRET_KEY: ${SECRET_KEY:-dev-secret-change-me-before-production}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3001}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-classic_way}
+      POSTGRES_USER: ${POSTGRES_USER:-classic_way}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-classic_way}
+      PAYMENT_PROVIDER: ${PAYMENT_PROVIDER:-cod}
+      PAYMENT_SECRET: ${PAYMENT_SECRET:-}
+      STORAGE_PROVIDER: ${STORAGE_PROVIDER:-local}
+    command:
+      - /bin/sh
+      - -c
+      - python -m app.core.init_db && exec uvicorn main:app --host 0.0.0.0 --port 8001
+    ports:
+      - "${BACKEND_PORT:-8011}:8001"
+    volumes:
+      - uploads:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  uploads:
+
+networks:
+  default:
+    name: classic-way

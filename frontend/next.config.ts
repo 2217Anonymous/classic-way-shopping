@@ -9,6 +9,11 @@ const nextConfig: NextConfig = {
         hostname: "images.unsplash.com",
       },
       {
+        protocol: "https",
+        hostname: "placehold.co",
+        pathname: "/**",
+      },
+      {
         protocol: "http",
         hostname: "localhost",
         port: "8001",
@@ -18,6 +23,18 @@ const nextConfig: NextConfig = {
         protocol: "http",
         hostname: "127.0.0.1",
         port: "8001",
+        pathname: "/uploads/**",
+      },
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "8011",
+        pathname: "/uploads/**",
+      },
+      {
+        protocol: "http",
+        hostname: "127.0.0.1",
+        port: "8011",
         pathname: "/uploads/**",
       },
     ],

@@ -57,12 +57,31 @@ class CheckoutPreviewResponse(BaseModel):
 
 class CustomerOrderItemResponse(BaseModel):
     id: UUID
+    product_id: UUID | None = None
+    product_slug: str | None = None
+    product_image: str | None = None
     name: str
     quantity: int
     unit_price: Decimal
     line_total: Decimal
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class StatusHistoryBrief(BaseModel):
+    from_status: str | None = None
+    to_status: str | None = None
+    note: str | None = None
+    created_at: datetime | None = None
+    status: str | None = None
+
+
+class ShipmentEventBrief(BaseModel):
+    status: str | None = None
+    description: str | None = None
+    location: str | None = None
+    occurred_at: datetime | None = None
+    source: str | None = None
 
 
 class CustomerOrderResponse(BaseModel):
@@ -76,30 +95,26 @@ class CustomerOrderResponse(BaseModel):
     discount_amount: Decimal
     total: Decimal
     currency: str
+    shipping_name: str | None = None
+    shipping_phone: str | None = None
+    shipping_line1: str | None = None
+    shipping_line2: str | None = None
+    shipping_city: str | None = None
+    shipping_state: str | None = None
+    shipping_postal_code: str | None = None
+    shipping_country: str | None = None
+    coupon_code: str | None = None
+    notes: str | None = None
     items: list[CustomerOrderItemResponse] = Field(default_factory=list)
+    status_history: list[StatusHistoryBrief] = Field(default_factory=list)
     created_at: datetime
+    updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
 
 
 class OrderCancelBody(BaseModel):
     reason: str | None = Field(default=None, max_length=255)
-
-
-class ShipmentEventBrief(BaseModel):
-    status: str | None = None
-    description: str | None = None
-    location: str | None = None
-    occurred_at: datetime | None = None
-    source: str | None = None
-
-
-class StatusHistoryBrief(BaseModel):
-    from_status: str | None = None
-    to_status: str | None = None
-    note: str | None = None
-    created_at: datetime | None = None
-    status: str | None = None
 
 
 class CustomerOrderTrackingResponse(BaseModel):

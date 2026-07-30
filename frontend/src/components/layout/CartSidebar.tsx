@@ -137,7 +137,7 @@ export default function CartSidebar() {
                     sizes="300px"
                   />
                   <div className="detail">
-                    <h4>Valaiyagam</h4>
+                    <h4>Classic Way</h4>
                     <h3>Fashion</h3>
                     <Link href="/shop" onClick={close}>
                       Shop Now

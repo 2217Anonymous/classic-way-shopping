@@ -60,7 +60,7 @@ export default function NewsletterModal() {
           </div>
           <div className="bb-popnews-box-content">
             <h2 id="newsletter-title">Newsletter.</h2>
-            <p>Subscribe the BlueBerry to get in touch and get the future update.</p>
+            <p>Subscribe to Classic Way for new arrivals, offers, and store updates.</p>
             <form className="bb-popnews-form" onSubmit={handleSubmit}>
               <input type="email" name="newsemail" placeholder="Email Address" required />
               <button type="submit" className="bb-btn-2" name="subscribe">

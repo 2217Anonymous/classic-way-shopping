@@ -49,7 +49,7 @@ export const BLOG_LAYOUTS: Record<string, BlogLayoutConfig> = {
 export const DEFAULT_SHOP_SLUG = "left-sidebar-col-3";
 
 export const BRAND = {
-  name: "Valaiyagam",
-  tagline: "Valaiyagam Fashion",
-  description: "Premium T-shirts and fashion apparel from Valaiyagam.",
+  name: "Classic Way",
+  tagline: "Classic Way",
+  description: "Quality T-shirts and fashion apparel from Classic Way.",
 } as const;

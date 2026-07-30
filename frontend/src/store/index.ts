@@ -4,6 +4,7 @@ import cartReducer from "./slices/cartSlice";
 import wishlistReducer from "./slices/wishlistSlice";
 import compareReducer from "./slices/compareSlice";
 import uiReducer from "./slices/uiSlice";
+import themeReducer from "./slices/themeSlice";
 
 export const makeStore = () =>
   configureStore({
@@ -13,6 +14,7 @@ export const makeStore = () =>
       wishlist: wishlistReducer,
       compare: compareReducer,
       ui: uiReducer,
+      theme: themeReducer,
     },
     devTools: process.env.NODE_ENV !== "production",
   });

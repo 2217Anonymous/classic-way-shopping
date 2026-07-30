@@ -1,6 +1,6 @@
-# BlueBerry Next.js
+# Classic Way Shopping
 
-A Next.js port of the **BlueBerry** multi-purpose eCommerce HTML template (grocery / organic food store).
+A Next.js storefront for **Classic Way** fashion and everyday essentials.
 
 ## Getting Started
 

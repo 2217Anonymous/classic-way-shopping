@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import HeroSlider from "@/components/home/HeroSlider";
 import CategorySection from "@/components/home/CategorySection";
 import DealSection from "@/components/home/DealSection";
@@ -5,11 +9,9 @@ import BannerSection from "@/components/home/BannerSection";
 import ProductTabs from "@/components/home/ProductTabs";
 import ServicesSection from "@/components/home/ServicesSection";
 import VendorsSection from "@/components/home/VendorsSection";
-import TestimonialsSection from "@/components/home/TestimonialsSection";
-import BlogSection from "@/components/home/BlogSection";
-import InstagramSection from "@/components/home/InstagramSection";
+import { useTheme } from "@/hooks/useTheme";
 
-export default function HomePage() {
+function GroceryHome() {
   return (
     <>
       <HeroSlider />
@@ -19,9 +21,25 @@ export default function HomePage() {
       <ProductTabs />
       <ServicesSection />
       <VendorsSection />
-      <TestimonialsSection />
-      <BlogSection />
-      <InstagramSection />
     </>
   );
+}
+
+/** Routes grocery vs fashion home based on theme.home_theme. */
+export default function HomePage() {
+  const router = useRouter();
+  const { theme, hydrated } = useTheme();
+
+  useEffect(() => {
+    if (!hydrated) return;
+    if (theme.home_theme === "fashion") {
+      router.replace("/demo-2");
+    }
+  }, [hydrated, theme.home_theme, router]);
+
+  if (!hydrated || theme.home_theme === "fashion") {
+    return <div className="py-20 text-center text-bb-muted">Loading...</div>;
+  }
+
+  return <GroceryHome />;
 }

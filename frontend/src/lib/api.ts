@@ -1,10 +1,10 @@
 const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8001/api/v1";
+  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8011/api/v1";
 
 export const API_ORIGIN =
   process.env.NEXT_PUBLIC_API_ORIGIN ??
   API_URL.replace(/\/api\/v1\/?$/, "") ??
-  "http://localhost:8001";
+  "http://localhost:8011";
 
 export const TOKEN_KEY = "customer_access_token";
 export const REFRESH_TOKEN_KEY = "customer_refresh_token";

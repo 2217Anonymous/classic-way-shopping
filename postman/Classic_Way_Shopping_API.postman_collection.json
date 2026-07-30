@@ -1,0 +1,180 @@
+{
+  "info": {
+    "name": "Classic Way Shopping API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Customer-facing shopping APIs under /api/v1"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8011/api/v1" },
+    { "key": "accessToken", "value": "" },
+    { "key": "productId", "value": "" },
+    { "key": "orderNumber", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"shopper@example.com\",\n  \"password\": \"Password123!\",\n  \"full_name\": \"Shopper One\",\n  \"phone\": \"+919876543210\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"shopper@example.com\",\n  \"password\": \"Password123!\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Search",
+      "item": [
+        {
+          "name": "Search products",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/search?q=shirt&page=1&limit=20"
+          }
+        },
+        {
+          "name": "Suggestions",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/search/suggestions?q=shi"
+          }
+        },
+        {
+          "name": "Filters",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/search/filters"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Recommendations",
+      "item": [
+        {
+          "name": "Home",
+          "request": { "method": "GET", "url": "{{baseUrl}}/recommendations/home" }
+        },
+        {
+          "name": "For you",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/recommendations/for-you"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "List",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/notifications"
+          }
+        },
+        {
+          "name": "Mark all read",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/notifications/read-all"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Recently Viewed",
+      "item": [
+        {
+          "name": "Track view",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/recently-viewed",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product_id\": \"{{productId}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "List",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/recently-viewed"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Support",
+      "item": [
+        {
+          "name": "Create ticket",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/support/tickets",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"subject\": \"Order delayed\",\n  \"category\": \"shipping\",\n  \"message\": \"My package has not arrived yet.\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tracking",
+      "item": [
+        {
+          "name": "By order number",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/tracking/{{orderNumber}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ratings",
+      "item": [
+        {
+          "name": "Summary",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/ratings/summary/{{productId}}"
+          }
+        }
+      ]
+    }
+  ]
+}

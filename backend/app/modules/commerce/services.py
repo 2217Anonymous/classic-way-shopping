@@ -64,6 +64,7 @@ class CommerceService:
         self.coupon_usage_repository = coupon_usage_repository
         self.shipment_repository = shipment_repository
         self.order_repository = order_repository
+        self.product_repository = product_repository
         self.address_repository = address_repository
         self.cart_service = CartService(cart_repository, product_repository)
         self.storefront_cart = StorefrontCartService(cart_repository, product_repository)
@@ -234,7 +235,8 @@ class CommerceService:
         self, customer: Customer, status: str | None = None
     ) -> list[CustomerOrderResponse]:
         orders = self.order_repository.list_for_customer(customer.id, status=status)
-        return [self._customer_order(o) for o in orders]
+        products = self._products_for_orders(orders)
+        return [self._customer_order(order, products) for order in orders]
 
     def get_order(self, customer: Customer, order_id: UUID) -> CustomerOrderResponse:
         order = self.order_repository.get(order_id)
@@ -356,16 +358,50 @@ class CommerceService:
             discount = min(coupon.discount_value, subtotal)
         return coupon, discount
 
-    def _customer_order(self, order) -> CustomerOrderResponse:
-        items = [
-            CustomerOrderItemResponse(
-                id=item.id,
-                name=item.name,
-                quantity=item.quantity,
-                unit_price=item.unit_price,
-                line_total=item.line_total,
-            )
+    def _products_for_orders(self, orders) -> dict:
+        product_ids = {
+            item.product_id
+            for order in orders
             for item in order.items
+            if item.product_id is not None
+        }
+        return {
+            product.id: product
+            for product in self.product_repository.get_many(product_ids)
+        }
+
+    def _customer_order(self, order, products: dict | None = None) -> CustomerOrderResponse:
+        product_map = products if products is not None else self._products_for_orders([order])
+        response_items = []
+        for item in order.items:
+            product = product_map.get(item.product_id) if item.product_id else None
+            primary_media = None
+            if product and product.media:
+                primary_media = next(
+                    (media for media in product.media if media.is_primary),
+                    product.media[0],
+                )
+            response_items.append(
+                CustomerOrderItemResponse(
+                    id=item.id,
+                    product_id=item.product_id,
+                    product_slug=product.slug if product else None,
+                    product_image=primary_media.url if primary_media else None,
+                    name=item.name,
+                    quantity=item.quantity,
+                    unit_price=item.unit_price,
+                    line_total=item.line_total,
+                )
+            )
+        history = [
+            StatusHistoryBrief(
+                from_status=h.from_status,
+                to_status=h.to_status,
+                note=h.note,
+                created_at=h.created_at,
+                status=h.to_status,
+            )
+            for h in (order.status_history or [])
         ]
         return CustomerOrderResponse(
             id=order.id,
@@ -378,6 +414,18 @@ class CommerceService:
             discount_amount=order.discount_amount,
             total=order.total,
             currency=order.currency,
-            items=items,
+            shipping_name=order.shipping_name,
+            shipping_phone=order.shipping_phone,
+            shipping_line1=order.shipping_line1,
+            shipping_line2=order.shipping_line2,
+            shipping_city=order.shipping_city,
+            shipping_state=order.shipping_state,
+            shipping_postal_code=order.shipping_postal_code,
+            shipping_country=order.shipping_country,
+            coupon_code=order.coupon_code,
+            notes=order.notes,
+            items=response_items,
+            status_history=history,
             created_at=order.created_at,
+            updated_at=order.updated_at,
         )

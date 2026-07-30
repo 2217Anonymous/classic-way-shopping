@@ -92,7 +92,7 @@ export default function ShopPageView({ config }: { config: ShopConfig }) {
             />
             <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
               <div className="text-center text-white px-4">
-                <h2 className="text-2xl md:text-3xl font-semibold mb-2">Valaiyagam Fashion Deals</h2>
+                <h2 className="text-2xl md:text-3xl font-semibold mb-2">Classic Way Fashion Deals</h2>
                 <p className="text-sm md:text-base opacity-90">Premium T-shirts and apparel</p>
               </div>
             </div>

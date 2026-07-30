@@ -1,5 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import Container from "@/components/ui/Container";
+import BrandLogo from "@/components/layout/BrandLogo";
+import { useTheme } from "@/hooks/useTheme";
+import { resolveHomePath, resolveShopPath } from "@/lib/themeResolver";
+import { useAppSelector } from "@/store/hooks";
+import { selectIsAuthenticated } from "@/store/slices/authSlice";
 
 const brandDirectory = [
   {
@@ -20,32 +27,23 @@ const brandDirectory = [
   },
 ];
 
-const footerColumns = {
-  category: [
-    { label: "Dairy & Milk", href: "/shop/left-sidebar-col-3" },
-    { label: "Snack & Spice", href: "/shop/banner-left-sidebar-col-3" },
-    { label: "Fast Food", href: "/shop/full-width-col-5" },
-    { label: "Juice & Drinks", href: "/shop/list-left-sidebar" },
-    { label: "Bakery", href: "/shop/list-full-col-2" },
-    { label: "Seafood", href: "/shop/banner-right-sidebar-col-4" },
-  ],
-  company: [
-    { label: "About us", href: "/about-us" },
-    { label: "Delivery", href: "/track-order" },
-    { label: "Legal Notice", href: "/faq" },
-    { label: "Terms & conditions", href: "/terms" },
-    { label: "Secure payment", href: "/checkout" },
-    { label: "Contact us", href: "/contact-us" },
-  ],
-  account: [
-    { label: "Sign In", href: "/login" },
-    { label: "View Cart", href: "/cart" },
-    { label: "Return Policy", href: "/faq" },
-    { label: "Become a Vendor", href: "/shop/left-sidebar-col-3" },
-    { label: "Affiliate Program", href: "/product/left-sidebar" },
-    { label: "Payments", href: "/checkout" },
-  ],
-};
+const companyLinks = [
+  { label: "About us", href: "/about-us" },
+  { label: "Delivery", href: "/track-order" },
+  { label: "Legal Notice", href: "/faq" },
+  { label: "Terms & conditions", href: "/terms" },
+  { label: "Secure payment", href: "/checkout" },
+  { label: "Contact us", href: "/contact-us" },
+];
+
+const categoryLabels = [
+  "Dairy & Milk",
+  "Snack & Spice",
+  "Fast Food",
+  "Juice & Drinks",
+  "Bakery",
+  "Seafood",
+];
 
 const socialLinks = [
   { icon: "ri-facebook-fill", href: "#" },
@@ -56,6 +54,23 @@ const socialLinks = [
 
 export default function Footer() {
   const year = new Date().getFullYear();
+  const { theme } = useTheme();
+  const homePath = resolveHomePath(theme);
+  const shopPath = resolveShopPath(theme);
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const accountLinks = isAuthenticated
+    ? [
+        { label: "My Orders", href: "/orders" },
+        { label: "My Profile", href: "/profile" },
+        { label: "View Cart", href: "/cart" },
+        { label: "Return Policy", href: "/faq" },
+      ]
+    : [
+        { label: "Sign In", href: "/login" },
+        { label: "View Cart", href: "/cart" },
+        { label: "Return Policy", href: "/faq" },
+        { label: "Payments", href: "/checkout" },
+      ];
 
   return (
     <footer className="mt-12 border-t border-bb-border bg-bb-soft">
@@ -69,7 +84,7 @@ export default function Footer() {
                 {group.links.map((link, i) => (
                   <span key={link} className="inline-flex items-center">
                     <Link
-                      href="/shop/left-sidebar-col-3"
+                      href={shopPath}
                       className="text-bb-muted hover:text-bb-primary transition-colors"
                     >
                       {link}
@@ -89,12 +104,12 @@ export default function Footer() {
         <Container>
           <div className="grid sm:grid-cols-2 lg:grid-cols-12 gap-8">
             <div className="lg:col-span-3">
-              <Link href="/" className="inline-flex items-center gap-2 text-xl font-bold text-bb-primary">
-                <i className="ri-shopping-basket-2-fill text-2xl" />
-                BlueBerry
+              <Link href={homePath} aria-label="Classic Way home">
+                <BrandLogo compact />
               </Link>
               <p className="text-sm text-bb-muted mt-4 leading-relaxed">
-                BlueBerry is the biggest market of grocery products. Get your daily needs from our store.
+                Classic Way brings you quality fashion and everyday essentials with a
+                simple, reliable shopping experience.
               </p>
               <div className="flex gap-3 mt-5">
                 <span className="inline-flex items-center gap-2 px-3 py-2 bg-white border border-bb-border rounded-md text-xs text-bb-muted">
@@ -109,10 +124,10 @@ export default function Footer() {
             <div className="lg:col-span-2">
               <h4 className="font-semibold text-bb-text mb-4">Category</h4>
               <ul className="space-y-2">
-                {footerColumns.category.map((item) => (
-                  <li key={item.label}>
-                    <Link href={item.href} className="text-sm text-bb-muted hover:text-bb-primary transition-colors">
-                      {item.label}
+                {categoryLabels.map((label) => (
+                  <li key={label}>
+                    <Link href={shopPath} className="text-sm text-bb-muted hover:text-bb-primary transition-colors">
+                      {label}
                     </Link>
                   </li>
                 ))}
@@ -122,7 +137,7 @@ export default function Footer() {
             <div className="lg:col-span-2">
               <h4 className="font-semibold text-bb-text mb-4">Company</h4>
               <ul className="space-y-2">
-                {footerColumns.company.map((item) => (
+                {companyLinks.map((item) => (
                   <li key={item.label}>
                     <Link href={item.href} className="text-sm text-bb-muted hover:text-bb-primary transition-colors">
                       {item.label}
@@ -135,13 +150,23 @@ export default function Footer() {
             <div className="lg:col-span-2">
               <h4 className="font-semibold text-bb-text mb-4">Account</h4>
               <ul className="space-y-2">
-                {footerColumns.account.map((item) => (
+                {accountLinks.map((item) => (
                   <li key={item.label}>
                     <Link href={item.href} className="text-sm text-bb-muted hover:text-bb-primary transition-colors">
                       {item.label}
                     </Link>
                   </li>
                 ))}
+                <li>
+                  <Link href={shopPath} className="text-sm text-bb-muted hover:text-bb-primary transition-colors">
+                    Become a Vendor
+                  </Link>
+                </li>
+                <li>
+                  <Link href={shopPath} className="text-sm text-bb-muted hover:text-bb-primary transition-colors">
+                    Affiliate Program
+                  </Link>
+                </li>
               </ul>
             </div>
 
@@ -187,8 +212,8 @@ export default function Footer() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-bb-muted">
             <p>
               Copyright © {year}{" "}
-              <Link href="/" className="text-bb-primary font-medium hover:underline">
-                BlueBerry
+              <Link href={homePath} className="text-bb-primary font-medium hover:underline">
+                Classic Way
               </Link>{" "}
               all rights reserved.
             </p>

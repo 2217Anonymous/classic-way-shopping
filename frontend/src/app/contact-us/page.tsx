@@ -49,7 +49,7 @@ export default function ContactUsPage() {
             <ul className="space-y-4 text-sm">
               <li className="flex items-start gap-3">
                 <i className="ri-map-pin-line text-bb-primary text-lg mt-0.5" />
-                <span className="text-bb-muted">Valaiyagam Fashion, India</span>
+                <span className="text-bb-muted">Classic Way, India</span>
               </li>
               <li className="flex items-center gap-3">
                 <i className="ri-phone-line text-bb-primary text-lg" />

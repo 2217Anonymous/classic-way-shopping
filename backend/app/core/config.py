@@ -29,6 +29,12 @@ class Settings(BaseSettings):
     payment_provider: str = "cod"
     payment_secret: str = ""
     storage_provider: str = "local"
+    redis_url: str = "redis://localhost:6379/0"
+    rate_limit_requests: int = 120
+    rate_limit_window_seconds: int = 60
+    s3_bucket: str = ""
+    s3_region: str = "ap-south-1"
+    s3_endpoint_url: str | None = None
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -42,7 +48,7 @@ class Settings(BaseSettings):
         # Sync SQLAlchemy driver: psycopg (v3). asyncpg is listed for async adoption.
         return (
             f"postgresql+psycopg://{self.postgres_user}:{self.postgres_password}"
-            f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
+            f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}?sslmode=require&channel_binding=require"
         )
 
     @property
